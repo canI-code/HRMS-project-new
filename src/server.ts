@@ -54,6 +54,29 @@ app.use(performanceMonitor());
 app.use(requestLogger);
 
 // Health check endpoint
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Service health check
+ *     tags: [system]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 environment:
+ *                   type: string
+ */
 app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -109,8 +132,27 @@ try {
         description: 'API documentation for Enterprise HRMS',
       },
       servers: [{ url: `http://localhost:${config.port}${apiBase}` }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
     },
-    apis: [],
+    apis: [
+      'src/server.ts',
+      'src/domains/auth/routes/*.ts',
+      'src/domains/employees/routes/*.ts',
+      'src/domains/attendance/routes/*.ts',
+      'src/domains/payroll/routes/*.ts',
+      'src/domains/performance/routes/*.ts',
+      'src/domains/documents/routes/*.ts',
+      'src/domains/notifications/routes/*.ts',
+      'src/domains/leave/routes/*.ts',
+    ],
   };
   const swaggerSpec = swaggerJSDoc(options);
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));

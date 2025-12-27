@@ -14,6 +14,24 @@ router.post(
   checkPermission('attendance', 'create'),
   attendanceController.checkIn.bind(attendanceController)
 );
+/**
+ * @openapi
+ * /attendance/check-in:
+ *   post:
+ *     summary: Check in for the day
+ *     tags: [attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Check-in recorded
+ */
 
 // Check out
 router.post(
@@ -21,6 +39,24 @@ router.post(
   checkPermission('attendance', 'update'),
   attendanceController.checkOut.bind(attendanceController)
 );
+/**
+ * @openapi
+ * /attendance/check-out:
+ *   post:
+ *     summary: Check out for the day
+ *     tags: [attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Check-out recorded
+ */
 
 // Mark absent
 router.post(
@@ -35,6 +71,24 @@ router.get(
   checkPermission('attendance', 'read'),
   attendanceController.getByDate.bind(attendanceController)
 );
+/**
+ * @openapi
+ * /attendance/{employeeId}/date:
+ *   get:
+ *     summary: Get attendance for a specific date
+ *     tags: [attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: employeeId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Attendance record
+ */
 
 // Get monthly attendance
 router.get(
@@ -42,6 +96,24 @@ router.get(
   checkPermission('attendance', 'read'),
   attendanceController.getMonthly.bind(attendanceController)
 );
+/**
+ * @openapi
+ * /attendance/{employeeId}/monthly:
+ *   get:
+ *     summary: Get monthly attendance summary
+ *     tags: [attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: employeeId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Monthly attendance summary
+ */
 
 // Create/update attendance policy
 router.post(

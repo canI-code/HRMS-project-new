@@ -25,8 +25,8 @@ const options: swaggerJSDoc.Options = {
       { name: 'notifications', description: 'Notification templates and delivery' },
     ],
   },
-  // You can add route files with JSDoc annotations here later
-  apis: [],
+  // JSDoc annotations sources
+  apis: ['src/server.ts'],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);

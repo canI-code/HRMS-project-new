@@ -10,6 +10,27 @@ const router = Router();
  * @access  Public
  */
 router.post('/login', AuthController.login);
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: User login
+ *     tags: [auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful, returns tokens
+ */
 
 /**
  * @route   POST /api/auth/logout
@@ -17,6 +38,18 @@ router.post('/login', AuthController.login);
  * @access  Private
  */
 router.post('/logout', AuthController.logout);
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     summary: User logout
+ *     tags: [auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
 
 /**
  * @route   POST /api/auth/refresh
@@ -24,6 +57,25 @@ router.post('/logout', AuthController.logout);
  * @access  Public
  */
 router.post('/refresh', AuthController.refreshToken);
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: New access token
+ */
 
 /**
  * @route   POST /api/auth/password-reset/request
@@ -80,5 +132,17 @@ router.get('/verify-email/:token', AuthController.verifyEmail);
  * @access  Private
  */
 router.get('/me', authenticate, AuthController.getCurrentUser);
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ */
 
 export default router;
