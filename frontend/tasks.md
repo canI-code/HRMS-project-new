@@ -6,33 +6,35 @@
 - [x] Set up Tailwind CSS
 - [x] Configure ESLint
 
-## Phase 2: Core Infrastructure
-- [ ] Set up API client (fetch/axios wrapper)
-- [ ] Configure environment variables
-- [ ] Create authentication context
-- [ ] Set up protected route wrapper
-- [ ] Create base layout components
+## Phase 2: Core Infrastructure & Auth Logic (UPDATED)
+- [x] API client (fetch wrapper)
+- [x] Environment variables
+- [x] Auth state management (access + refresh)
+- [x] Token refresh handling
+- [x] Protected route wrapper
+- [x] Role resolution (HR / Manager / Employee)
+- [x] Base layout components
+- [x] No UI yet — logic only
 
 ## Phase 3: Authentication UI
-- [ ] Login page
-- [ ] Logout functionality  
-- [ ] MFA setup/verification
-- [ ] Password reset flow
-- [ ] Session management
+- [x] Login page
+- [x] MFA verification
+- [x] Password reset flow
+- [x] Logout handling
+- [x] Session expiration handling
 
-## Phase 4: Dashboard
-- [ ] Main dashboard layout
-- [ ] Navigation sidebar
-- [ ] User profile dropdown
-- [ ] Quick stats widgets
-- [ ] Recent activity feed
+## Phase 4: App Layout & Navigation
+- [x] Sidebar
+- [x] Topbar
+- [x] Role-based navigation
+- [x] User profile dropdown
 
 ## Phase 5: Employee Module
-- [ ] Employee list view with filters
-- [ ] Employee detail page
-- [ ] Create/edit employee form
-- [ ] Onboarding workflow UI
-- [ ] Hierarchy visualization
+- [x] Employee list view with filters
+- [x] Employee detail page
+- [x] Create/edit employee form
+- [x] Onboarding workflow UI
+- [x] Hierarchy visualization
 
 ## Phase 6: Attendance Module
 - [ ] Check-in/check-out interface
@@ -73,8 +75,7 @@
 
 ## Phase 12: Admin Settings
 - [ ] Organization settings
-- [ ] User role management
-- [ ] Integration settings
+- [ ] Role management UI
 - [ ] Audit log viewer
 
 ## Phase 13: Polish & Optimization

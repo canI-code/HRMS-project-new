@@ -26,8 +26,26 @@ export class EmployeeController {
   static async list(req: Request, res: Response, next: NextFunction) {
     try {
       const ctx = req.user!;
-      const employees = await EmployeeService.listEmployees(ctx, { department: req.query['department'] as string });
-      res.json({ success: true, data: employees });
+      const page = parseInt(req.query['page'] as string) || 1;
+      const limit = parseInt(req.query['limit'] as string) || 20;
+      const search = req.query['search'] as string;
+      const department = req.query['department'] as string;
+      const status = req.query['status'] as string;
+      const employmentType = req.query['employmentType'] as string;
+      const sortBy = req.query['sortBy'] as string || 'createdAt';
+      const sortOrder = req.query['sortOrder'] as string || 'desc';
+
+      const result = await EmployeeService.listEmployees(ctx, {
+        page,
+        limit,
+        search,
+        department,
+        status,
+        employmentType,
+        sortBy,
+        sortOrder,
+      });
+      res.json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

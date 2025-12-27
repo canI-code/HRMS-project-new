@@ -31,13 +31,15 @@ export class AuthService {
 
     // Find user with password field
     const user = await User.findOne({ email, isActive: true, isDeleted: false })
-      .select('+password +mfaSecret')
-      .populate('organizationId');
+      .select('+password +mfaSecret');
 
     if (!user) {
       logger.warn('Login attempt with invalid email', { email });
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
     }
+
+    // Store organizationId as string before any operations
+    const organizationId = user.organizationId.toString();
 
     // Check if account is locked
     if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
@@ -89,7 +91,7 @@ export class AuthService {
           id: user._id.toString(),
           email: user.email,
           role: user.role,
-          organizationId: user.organizationId.toString(),
+          organizationId,
         },
         accessToken: '',
         refreshToken: '',
@@ -130,7 +132,7 @@ export class AuthService {
     logger.info('User logged in successfully', {
       userId: user._id.toString(),
       email: user.email,
-      organizationId: user.organizationId.toString(),
+      organizationId,
     });
 
     return {
@@ -138,7 +140,7 @@ export class AuthService {
         id: user._id.toString(),
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId.toString(),
+        organizationId,
       },
       accessToken,
       refreshToken,

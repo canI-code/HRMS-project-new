@@ -77,11 +77,62 @@ export class EmployeeService {
     return employee;
   }
 
-  static async listEmployees(ctx: RequestContext, { department }: { department?: string } = {}) {
+  static async listEmployees(
+    ctx: RequestContext,
+    {
+      page = 1,
+      limit = 20,
+      search,
+      department,
+      status,
+      employmentType,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    }: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      department?: string;
+      status?: string;
+      employmentType?: string;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {}
+  ) {
     const q: any = { organizationId: ctx.organizationId, isDeleted: { $ne: true } };
+
+    if (search) {
+      q.$or = [
+        { 'personal.firstName': { $regex: search, $options: 'i' } },
+        { 'personal.lastName': { $regex: search, $options: 'i' } },
+        { 'personal.contact.email': { $regex: search, $options: 'i' } },
+        { employeeCode: { $regex: search, $options: 'i' } },
+      ];
+    }
+
     if (department) q['professional.department'] = department;
-    const employees = await EmployeeModel.find(q).limit(100);
-    return employees;
+    if (status) q['professional.status'] = status;
+    if (employmentType) q['professional.employmentType'] = employmentType;
+
+    const total = await EmployeeModel.countDocuments(q);
+    const totalPages = Math.ceil(total / limit);
+    const skip = (page - 1) * limit;
+
+    const sortObj: any = {};
+    sortObj[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+    const employees = await EmployeeModel.find(q)
+      .sort(sortObj)
+      .skip(skip)
+      .limit(limit);
+
+    return {
+      employees,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   static async updateEmployee(ctx: RequestContext, employeeId: Types.ObjectId, updates: UpdateEmployeeInput) {

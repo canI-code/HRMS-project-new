@@ -44,6 +44,10 @@ npm install
 npm run dev                 # Starts on http://localhost:3001
 ```
 
+## 🚫 Backend Feature Freeze
+
+Backend is frozen: no new domains or refactors. Only critical fixes (regressions, security, data-loss, blocking prod issues). Avoid schema/API changes; if unavoidable, document and version. PRs touching backend should include a brief "why this is critical" note.
+
 ## ✨ Features
 
 - **Employee Lifecycle**: Onboarding, offboarding, hierarchy management
