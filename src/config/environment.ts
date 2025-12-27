@@ -44,6 +44,9 @@ interface Config {
   // Logging Configuration
   logLevel: string;
   logFile: string;
+
+  // Jobs Configuration
+  jobsEnabled: boolean;
 }
 
 const requiredEnvVars = [
@@ -105,4 +108,7 @@ export const config: Config = {
   // Logging Configuration
   logLevel: process.env['LOG_LEVEL'] || 'info',
   logFile: process.env['LOG_FILE'] || 'logs/app.log',
+
+  // Jobs Configuration
+  jobsEnabled: (process.env['JOBS_ENABLED'] || 'false').toLowerCase() === 'true',
 };

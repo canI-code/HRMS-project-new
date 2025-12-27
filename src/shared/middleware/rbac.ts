@@ -50,6 +50,9 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'payroll', action: 'read', minRole: UserRole.HR_ADMIN, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'payroll', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'payroll', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+  { resource: 'payroll-structure', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+  { resource: 'payroll-structure', action: 'read', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+  { resource: 'payroll-structure', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   
   // Performance management
   { resource: 'performance', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
@@ -61,6 +64,12 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'documents', action: 'create', minRole: UserRole.MANAGER, organizationBoundary: true },
   { resource: 'documents', action: 'update', minRole: UserRole.MANAGER, organizationBoundary: true },
   { resource: 'documents', action: 'delete', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+
+  // Notification management
+  { resource: 'notifications', action: 'read', minRole: UserRole.MANAGER, organizationBoundary: true },
+  { resource: 'notifications', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+  { resource: 'notifications', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
+  { resource: 'notifications', action: 'preferences', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   
   // System administration
   { resource: 'admin', action: 'read', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },

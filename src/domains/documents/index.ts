@@ -1,6 +1,4 @@
-// Document domain exports
-// export * from './models';
-// export * from './services';
-// export * from './controllers';
-// export * from './routes';
-// export * from './types';
+export * from './models/Document';
+export * from './services/DocumentService';
+export * from './controllers/DocumentController';
+export * from './routes/documentRoutes';

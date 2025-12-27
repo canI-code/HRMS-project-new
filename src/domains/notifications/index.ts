@@ -1,6 +1,4 @@
-// Notification domain exports
-// export * from './models';
-// export * from './services';
-// export * from './controllers';
-// export * from './routes';
-// export * from './types';
+export * from './models/Notification';
+export * from './services/NotificationService';
+export * from './controllers/NotificationController';
+export * from './routes/notificationRoutes';

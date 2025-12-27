@@ -1,6 +1,7 @@
 // Payroll domain exports
-// export * from './models';
-// export * from './services';
-// export * from './controllers';
-// export * from './routes';
-// export * from './types';
+export * from './models/SalaryStructure';
+export * from './models/PayrollRun';
+export * from './models/Payslip';
+export * from './services/PayrollService';
+export * from './controllers/PayrollController';
+export * from './routes/payrollRoutes';

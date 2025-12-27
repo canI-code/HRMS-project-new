@@ -1,6 +1,6 @@
 // Performance domain exports
-// export * from './models';
-// export * from './services';
-// export * from './controllers';
-// export * from './routes';
-// export * from './types';
+export * from './models/PerformanceGoal';
+export * from './models/PerformanceReview';
+export * from './services/PerformanceService';
+export * from './controllers/PerformanceController';
+export * from './routes/performanceRoutes';
