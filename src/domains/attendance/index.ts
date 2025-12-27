@@ -1,6 +1,6 @@
 // Attendance domain exports
-// export * from './models';
-// export * from './services';
-// export * from './controllers';
-// export * from './routes';
+export * from './models/Attendance';
+export * from './models/AttendancePolicy';
+export * from './services/AttendanceService';
+export * from './routes/attendanceRoutes';
 // export * from './types';

@@ -10,6 +10,7 @@ import { requestLogger } from '@/shared/middleware/requestLogger';
 import authRoutes from '@/domains/auth/routes/authRoutes';
 import employeeRoutes from '@/domains/employees/routes/employeeRoutes';
 import leaveRoutes from '@/domains/leave/routes/leaveRoutes';
+import { attendanceRoutes } from '@/domains/attendance/routes/attendanceRoutes';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.get('/api', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
