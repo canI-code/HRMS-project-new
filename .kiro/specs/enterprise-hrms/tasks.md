@@ -398,9 +398,10 @@
     - **Completed**: Versioned routing at `/api/v1/*` with unversioned `/api/*` fallback for backward compatibility.
 
 - [ ] 15. Final checkpoint - Comprehensive testing
-  - Ensure all tests pass, ask the user if questions arise.
   - Run complete test suite including property-based tests
+  - Fix property test generators to produce valid data only
   - Validate API documentation completeness and accuracy
+  - Ensure all 65 tests pass
 
 ---
 
@@ -410,4 +411,5 @@ Status Update (2025-12-27)
 - [x] Run instructions verified for dev server and demo enqueue.
 - [x] API documentation complete: All 8 domains fully annotated with OpenAPI schemas, security schemes, and parameters.
 - [x] API versioning implemented with backward compatibility.
-- [ ] Run final test suite (npm test) and validate all requirements covered.
+- [x] Property test generator fixes applied: fc.stringMatching() enforces valid 2-20 char names; passwords use alphanumeric+special chars.
+- [ ] Full test suite validation: Currently 51/65 tests passing. Remaining issues: test data cleanup per run, unique email generation, hierarchy circular manager check logic.
