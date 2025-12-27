@@ -1,160 +1,159 @@
 # Enterprise HRMS
 
-A comprehensive Human Resource Management System designed for mid-to-large organizations (500-10,000+ employees). Built with the MERN stack, prioritizing scalability, security, and maintainability.
+A full-stack Human Resource Management System for modern organizations.
 
-## Features
-
-- **Employee Lifecycle Management**: Complete onboarding through exit processes
-- **Attendance Tracking**: Time tracking, shift management, policy enforcement
-- **Leave Management**: Request workflows, balance calculations, approvals
-- **Payroll Processing**: Salary calculations, payslip generation, compliance
-- **Performance Management**: Goal setting, reviews, feedback cycles
-- **Document Management**: Secure storage, version control, access controls
-- **Multi-tenant SaaS**: Organization-level data isolation
-- **Enterprise Security**: RBAC, audit trails, encryption
-
-## Tech Stack
-
-- **Backend**: Node.js, Express.js, TypeScript
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT with refresh tokens, MFA support
-- **Testing**: Jest, fast-check (Property-Based Testing)
-- **Code Quality**: ESLint, Prettier
-- **Caching**: Redis
-- **Background Jobs**: Bull Queue
-- **Logging**: Winston
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
-src/
-├── config/           # Environment and database configuration
-├── domains/          # Domain-driven design structure
-│   ├── auth/         # Authentication & authorization
-│   ├── employees/    # Employee management
-│   ├── attendance/   # Time tracking
-│   ├── leave/        # Leave management
-│   ├── payroll/      # Payroll processing
-│   ├── performance/  # Performance management
-│   ├── documents/    # Document management
-│   └── notifications/# Notification system
-├── shared/           # Shared utilities and types
-│   ├── middleware/   # Express middleware
-│   ├── types/        # TypeScript type definitions
-│   └── utils/        # Utility functions
-└── server.ts         # Application entry point
-
-tests/
-├── fixtures/         # Test data fixtures
-├── property/         # Property-based tests
-└── utils/            # Test utilities and generators
+own-hrms-project/
+│
+├── backend/                # Node.js + Express + TypeScript backend
+│   ├── src/               # Source code (domains, middleware, utils)
+│   ├── tests/             # Jest tests (unit, integration, property-based)
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── frontend/              # Next.js + React + TypeScript frontend
+│   ├── app/               # Next.js App Router
+│   ├── public/            # Static assets
+│   ├── package.json
+│   └── tailwind.config.ts
+│
+└── README.md              # This file
 ```
 
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
+- Node.js 18+
+- MongoDB
+- Redis
 
-- Node.js (>= 18.0.0)
-- MongoDB (>= 4.4)
-- Redis (>= 6.0)
-
-### Installation
-
-1. Clone the repository:
+### Backend Setup
 ```bash
-git clone <repository-url>
-cd enterprise-hrms
-```
-
-2. Install dependencies:
-```bash
+cd backend
 npm install
+cp .env.example .env        # Configure MongoDB & Redis URLs
+npm run dev                 # Starts on http://localhost:3000
 ```
 
-3. Set up environment variables:
+### Frontend Setup
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+cd frontend
+npm install
+npm run dev                 # Starts on http://localhost:3001
 ```
 
-4. Start MongoDB and Redis services
+## ✨ Features
 
-### Development
+- **Employee Lifecycle**: Onboarding, offboarding, hierarchy management
+- **Attendance**: Time tracking, shift management, reports
+- **Leave Management**: Request workflows, approvals, balance tracking
+- **Payroll**: Salary structures, payroll runs, payslip generation
+- **Performance**: Goal setting, reviews, 360° feedback
+- **Documents**: Secure storage, versioning, access control
+- **Multi-tenant SaaS**: Organization-level isolation
+- **Enterprise Security**: RBAC, MFA, audit trails
 
+## 🛠️ Tech Stack
+
+### Backend
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js
+- **Language**: TypeScript
+- **Database**: MongoDB (Mongoose)
+- **Cache/Jobs**: Redis (Bull queues)
+- **Auth**: JWT + refresh tokens + MFA
+- **Testing**: Jest + fast-check (property-based)
+- **API Docs**: Swagger/OpenAPI 3.0
+
+### Frontend
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Library**: React 19
+- **State**: React hooks + Context
+
+## 📚 Documentation
+
+- **API Docs**: http://localhost:3000/docs (Swagger UI)
+- **Backend Tasks**: `backend/.kiro/specs/enterprise-hrms/tasks.md`
+- **API Version**: v1 at `/api/v1/*`
+
+## 🧪 Testing
+
+### Backend (65 tests - all passing ✅)
 ```bash
-# Start development server
-npm run dev
+cd backend
+npm test                    # Run all tests
+npm test -- --watch        # Watch mode
+npm test -- --coverage     # With coverage
+```
 
-# Run tests
+Test categories:
+- Unit tests: Domain services & utilities
+- Integration tests: API endpoints
+- Property-based tests: Business logic invariants
+
+### Frontend
+```bash
+cd frontend
 npm test
+```
 
-# Run tests in watch mode
-npm run test:watch
+## 🏛️ Backend Architecture
 
-# Build for production
+### Domain-Driven Design
+1. **Auth & Identity** - Authentication, authorization, MFA
+2. **Employees** - Lifecycle, onboarding, hierarchy
+3. **Attendance** - Check-in/out, tracking, reports
+4. **Leave** - Requests, approvals, balances
+5. **Payroll** - Structures, runs, payslips
+6. **Performance** - Goals, reviews, feedback
+7. **Documents** - Storage, versioning, access
+8. **Notifications** - Templates, delivery, preferences
+
+### Key Patterns
+- Multi-tenancy with organization isolation
+- RBAC (Role-Based Access Control)
+- Immutable audit logging
+- Background job processing (Redis queues)
+- API versioning with backward compatibility
+
+## 🔐 Security
+
+- JWT authentication with refresh tokens
+- Password hashing (bcrypt)
+- Multi-factor authentication (TOTP)
+- Token blacklisting on logout
+- Organization-level data isolation
+- Role-based permissions
+- Rate limiting
+- Input sanitization
+- Security headers (Helmet)
+
+## 🚢 Deployment
+
+### Backend
+```bash
+cd backend
 npm run build
-
-# Start production server
 npm start
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
 ```
 
-### Testing
-
-The project uses a dual testing approach:
-
-- **Unit Tests**: Specific examples and edge cases
-- **Property-Based Tests**: Universal properties using fast-check
-
-Property-based tests are configured to run 100 iterations minimum and are tagged with the format:
-```
-Feature: enterprise-hrms, Property {number}: {property_text}
+### Frontend
+```bash
+cd frontend
+npm run build
+npm start
 ```
 
-### Environment Variables
+## 📖 Additional Resources
 
-Key environment variables (see `.env.example` for complete list):
+- [Backend Progress Tracking](backend/.kiro/specs/enterprise-hrms/tasks.md)
+- [API Documentation](http://localhost:3000/docs)
+- [Swagger Spec](http://localhost:3000/api/v1/docs)
 
-- `NODE_ENV`: Environment (development/production/test)
-- `PORT`: Server port (default: 3000)
-- `MONGODB_URI`: MongoDB connection string
-- `JWT_SECRET`: JWT signing secret
-- `REDIS_URL`: Redis connection URL
+---
 
-## Architecture
-
-The application follows Domain-Driven Design principles with:
-
-- **Bounded Contexts**: Clear domain separation
-- **CQRS Pattern**: Command/Query separation where appropriate
-- **Event-Driven Architecture**: Domain events for cross-domain communication
-- **Layered Architecture**: Controller → Service → Repository pattern
-
-## Security
-
-- JWT-based authentication with refresh token rotation
-- Role-Based Access Control (RBAC)
-- Multi-Factor Authentication (MFA) support
-- Data encryption at rest and in transit
-- Comprehensive audit logging
-- Rate limiting and security headers
-
-## API Documentation
-
-API documentation will be available at `/api/docs` when the server is running (Swagger/OpenAPI).
-
-## Contributing
-
-1. Follow the existing code style and patterns
-2. Write tests for new functionality
-3. Ensure all tests pass before submitting
-4. Update documentation as needed
-
-## License
-
-MIT License - see LICENSE file for details
+**Built with ❤️ using modern web technologies**
