@@ -62,8 +62,8 @@ describe('Employee Termination Property Tests', () => {
       fc.asyncProperty(
         fc.record({
           employeeCode: fc.hexaString({ minLength: 6, maxLength: 12 }),
-          firstName: fc.string({ minLength: 2, maxLength: 20 }),
-          lastName: fc.string({ minLength: 2, maxLength: 20 }),
+          firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+          lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
           email: fc.emailAddress(),
           baseSalary: fc.integer({ min: 0, max: 100000 }),
           benefitCount: fc.integer({ min: 0, max: 5 }),

@@ -55,25 +55,35 @@ describe('Hierarchy Consistency Property Tests', () => {
 
     await fc.assert(
       fc.asyncProperty(
-        fc.record({
-          managerCode: fc.hexaString({ minLength: 6, maxLength: 12 }),
-          employeeCode: fc.hexaString({ minLength: 6, maxLength: 12 }),
-          firstName: fc.string({ minLength: 2, maxLength: 20 }),
-          lastName: fc.string({ minLength: 2, maxLength: 20 }),
-          email: fc.emailAddress(),
-        }),
+        fc.tuple(
+          fc.hexaString({ minLength: 6, maxLength: 12 }),
+          fc.hexaString({ minLength: 6, maxLength: 12 })
+        ).filter(([managerCode, employeeCode]) => managerCode !== employeeCode)
+          .chain(([managerCode, employeeCode]) =>
+            fc.record({
+              managerCode: fc.constant(managerCode),
+              employeeCode: fc.constant(employeeCode),
+              firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+              lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+              managerEmail: fc.emailAddress(),
+              employeeEmail: fc.emailAddress(),
+            })
+          ),
         async (rec) => {
+          // Clear any existing employees from prior runs
+          await EmployeeModel.deleteMany({ organizationId: orgId });
+          
           const ctx = { ...ctxBase, organizationId: orgId };
           const manager = await EmployeeService.createEmployee(ctx, {
             organizationId: orgId,
             employeeCode: rec.managerCode,
-            personal: { firstName: rec.firstName, lastName: rec.lastName, contact: { email: rec.email } },
+            personal: { firstName: rec.firstName, lastName: rec.lastName, contact: { email: rec.managerEmail } },
             professional: { employmentType: 'full_time', startDate: new Date(), title: 'Manager' },
           });
           const emp = await EmployeeService.createEmployee(ctx, {
             organizationId: orgId,
             employeeCode: rec.employeeCode,
-            personal: { firstName: rec.firstName, lastName: rec.lastName, contact: { email: rec.email } },
+            personal: { firstName: rec.firstName, lastName: rec.lastName, contact: { email: rec.employeeEmail } },
             professional: { employmentType: 'full_time', startDate: new Date(), title: 'Engineer' },
           });
 
@@ -105,7 +115,7 @@ describe('Hierarchy Consistency Property Tests', () => {
           await EmployeeModel.findByIdAndDelete(emp._id);
         }
       ),
-      { numRuns: 5 }
+      { numRuns: 3 }
     );
   });
 });

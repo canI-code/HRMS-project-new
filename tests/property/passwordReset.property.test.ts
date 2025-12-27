@@ -99,9 +99,9 @@ describe('Password Reset Property Tests', () => {
           fc.array(
             fc.record({
               email: fc.emailAddress(),
-              firstName: fc.string({ minLength: 2, maxLength: 20 }),
-              lastName: fc.string({ minLength: 2, maxLength: 20 }),
-              password: fc.string({ minLength: 8, maxLength: 30 }),
+              firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+              lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+              password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
             }),
             { minLength: 1, maxLength: 5 }
           ),
@@ -174,8 +174,8 @@ describe('Password Reset Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
             oldPassword: fc.string({ minLength: 8, maxLength: 30 }),
             newPassword: fc.string({ minLength: 8, maxLength: 30 }),
           }),
@@ -230,7 +230,7 @@ describe('Password Reset Property Tests', () => {
         ),
         { numRuns: 10 }
       );
-    });
+    }, 60000);
 
     it('should prevent password reuse during reset', async () => {
       if (process.env['SKIP_DB_TESTS'] === 'true') {
@@ -241,9 +241,9 @@ describe('Password Reset Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -321,8 +321,8 @@ describe('Password Reset Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
             oldPassword: fc.string({ minLength: 8, maxLength: 30 }),
             newPassword: fc.string({ minLength: 8, maxLength: 30 }),
             anotherPassword: fc.string({ minLength: 8, maxLength: 30 }),

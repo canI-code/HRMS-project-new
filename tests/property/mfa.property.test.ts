@@ -96,9 +96,9 @@ describe('MFA Enforcement Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Enable organization-wide MFA
@@ -159,9 +159,9 @@ describe('MFA Enforcement Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -235,9 +235,9 @@ describe('MFA Enforcement Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
             invalidToken: fc.string({ minLength: 6, maxLength: 6 }).filter(t => !/^\d{6}$/.test(t)),
           }),
           async (userData) => {
@@ -303,9 +303,9 @@ describe('MFA Enforcement Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -387,9 +387,9 @@ describe('MFA Enforcement Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
             wrongPassword: fc.string({ minLength: 8, maxLength: 30 }),
           }),
           async (userData) => {

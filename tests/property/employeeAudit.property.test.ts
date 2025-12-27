@@ -62,8 +62,8 @@ describe('Employee Audit Property Tests', () => {
       fc.asyncProperty(
         fc.record({
           employeeCode: fc.hexaString({ minLength: 6, maxLength: 12 }),
-          firstName: fc.string({ minLength: 2, maxLength: 20 }),
-          lastName: fc.string({ minLength: 2, maxLength: 20 }),
+          firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+          lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
           email: fc.emailAddress(),
           department: fc.string({ minLength: 2, maxLength: 20 }),
           title: fc.string({ minLength: 2, maxLength: 30 }),

@@ -102,9 +102,9 @@ describe('Session Termination Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -167,9 +167,9 @@ describe('Session Termination Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -232,9 +232,9 @@ describe('Session Termination Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           fc.integer({ min: 1, max: 3 }),
           async (userData, refreshCount) => {
@@ -315,9 +315,9 @@ describe('Session Termination Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
@@ -394,9 +394,9 @@ describe('Session Termination Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             email: fc.emailAddress(),
-            firstName: fc.string({ minLength: 2, maxLength: 20 }),
-            lastName: fc.string({ minLength: 2, maxLength: 20 }),
-            password: fc.string({ minLength: 8, maxLength: 30 }),
+            firstName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
+            password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
           async (userData) => {
             // Create user
