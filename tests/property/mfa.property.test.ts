@@ -100,7 +100,9 @@ describe('MFA Enforcement Property Tests', () => {
             lastName: fc.stringMatching(/^[A-Za-z][A-Za-z ]{1,19}$/),
             password: fc.stringMatching(/^[A-Za-z0-9!@#$%]{8,30}$/),
           }),
-          async (userData) => {\n            // Clear users to prevent email duplication\n            await User.deleteMany({ organizationId: testOrgId });
+          async (userData) => {
+            // Clear users to prevent email duplication
+            await User.deleteMany({ organizationId: testOrgId });
             // Enable organization-wide MFA
             await Organization.findByIdAndUpdate(testOrgId, {
               'settings.securitySettings.mfaRequired': true,
