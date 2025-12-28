@@ -13,6 +13,7 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
+    "seed": "ts-node -r tsconfig-paths/register seed.ts",
     "jobs:demo:enqueue": "ts-node -r tsconfig-paths/register src/jobs/demoEnqueue.ts"
   },
   "keywords": [

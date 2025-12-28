@@ -77,6 +77,14 @@ export class EmployeeService {
     return employee;
   }
 
+  static async getEmployeeByUserId(ctx: RequestContext, userId: Types.ObjectId) {
+    const employee = await EmployeeModel.findOne({ organizationId: ctx.organizationId, userId, isDeleted: { $ne: true } });
+    if (!employee) {
+      throw new AppError('Employee not found for current user', 404, 'EMPLOYEE_NOT_FOUND');
+    }
+    return employee;
+  }
+
   static async listEmployees(
     ctx: RequestContext,
     {

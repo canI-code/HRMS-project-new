@@ -33,6 +33,16 @@ export const employeeApi = {
   },
 
   /**
+   * Get current user's employee profile
+   */
+  async me(tokens: AuthTokens): Promise<Employee> {
+    return request<Employee>("/employees/me", {
+      method: "GET",
+      tokens,
+    });
+  },
+
+  /**
    * Get employee by ID
    */
   async get(id: string, tokens: AuthTokens): Promise<Employee> {

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { attendanceService } from '../services/AttendanceService';
 import { AppError } from '../../../shared/utils/AppError';
+import { Types } from 'mongoose';
+import { EmployeeModel } from '@/domains/employees/models/Employee';
 
 export class AttendanceController {
   async checkIn(req: Request, res: Response, next: NextFunction) {
@@ -19,6 +21,19 @@ export class AttendanceController {
 
       if (!employeeId) {
         throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      // Employees can only check-in for themselves
+      if (context.userRole === 'employee') {
+        const emp = await EmployeeModel.findOne({
+          _id: new Types.ObjectId(employeeId),
+          organizationId: new Types.ObjectId(organizationId),
+          userId: new Types.ObjectId(userId),
+          isDeleted: { $ne: true },
+        });
+        if (!emp) {
+          throw new AppError('Insufficient permissions: can only check in for your own profile', 403, 'INSUFFICIENT_PERMISSIONS');
+        }
       }
 
       const record = await attendanceService.checkIn(
@@ -54,6 +69,19 @@ export class AttendanceController {
 
       if (!employeeId) {
         throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      // Employees can only check-out for themselves
+      if (context.userRole === 'employee') {
+        const emp = await EmployeeModel.findOne({
+          _id: new Types.ObjectId(employeeId),
+          organizationId: new Types.ObjectId(organizationId),
+          userId: new Types.ObjectId(userId),
+          isDeleted: { $ne: true },
+        });
+        if (!emp) {
+          throw new AppError('Insufficient permissions: can only check out for your own profile', 403, 'INSUFFICIENT_PERMISSIONS');
+        }
       }
 
       const record = await attendanceService.checkOut(
@@ -111,6 +139,7 @@ export class AttendanceController {
         throw new AppError('Authentication required', 401, 'AUTHENTICATION_REQUIRED');
       }
       const organizationId = context.organizationId.toString();
+      const userId = context.userId.toString();
 
       const employeeId = req.params['employeeId'];
       const year = req.query['year']
@@ -122,6 +151,19 @@ export class AttendanceController {
 
       if (!employeeId) {
         throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      // Employees can only view their own monthly summary
+      if (context.userRole === 'employee') {
+        const emp = await EmployeeModel.findOne({
+          _id: new Types.ObjectId(employeeId),
+          organizationId: new Types.ObjectId(organizationId),
+          userId: new Types.ObjectId(userId),
+          isDeleted: { $ne: true },
+        });
+        if (!emp) {
+          throw new AppError('Insufficient permissions: can only view your own attendance', 403, 'INSUFFICIENT_PERMISSIONS');
+        }
       }
 
       const result = await attendanceService.getMonthlyAttendance(

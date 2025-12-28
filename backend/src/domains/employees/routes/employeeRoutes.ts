@@ -39,6 +39,9 @@ router.get('/', checkPermission('employees', 'read'), EmployeeController.list);
  *       200:
  *         description: Employee list
  */
+// Current user's employee profile (no RBAC - restricted to own record)
+// Place this before parameterized routes to avoid matching "/me" as ":id"
+router.get('/me', EmployeeController.getMe);
 router.get('/:id', checkPermission('employees', 'read'), EmployeeController.get);
 /**
  * @openapi

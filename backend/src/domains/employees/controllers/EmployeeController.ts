@@ -23,6 +23,16 @@ export class EmployeeController {
     }
   }
 
+  static async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ctx = req.user!;
+      const employee = await EmployeeService.getEmployeeByUserId(ctx, new Types.ObjectId(ctx.userId));
+      res.json({ success: true, data: employee });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async list(req: Request, res: Response, next: NextFunction) {
     try {
       const ctx = req.user!;

@@ -11,7 +11,9 @@ router.use(authenticate);
 // Check in
 router.post(
   '/check-in',
-  checkPermission('attendance', 'create'),
+  checkPermission('attendance', 'create', {
+    getUserId: (req) => req.user?.userId,
+  }),
   attendanceController.checkIn.bind(attendanceController)
 );
 /**
@@ -36,7 +38,9 @@ router.post(
 // Check out
 router.post(
   '/check-out',
-  checkPermission('attendance', 'update'),
+  checkPermission('attendance', 'update', {
+    getUserId: (req) => req.user?.userId,
+  }),
   attendanceController.checkOut.bind(attendanceController)
 );
 /**
@@ -61,7 +65,9 @@ router.post(
 // Mark absent
 router.post(
   '/mark-absent',
-  checkPermission('attendance', 'create'),
+  checkPermission('attendance', 'create', {
+    getUserId: (req) => req.user?.userId,
+  }),
   attendanceController.markAbsent.bind(attendanceController)
 );
 
@@ -93,7 +99,9 @@ router.get(
 // Get monthly attendance
 router.get(
   '/:employeeId/monthly',
-  checkPermission('attendance', 'read'),
+  checkPermission('attendance', 'read', {
+    getUserId: (req) => req.user?.userId,
+  }),
   attendanceController.getMonthly.bind(attendanceController)
 );
 /**
