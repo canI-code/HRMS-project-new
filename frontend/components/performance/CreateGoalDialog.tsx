@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/auth/useAuth';
+import { useAuth } from '@/lib/auth/context';
 import { performanceApi } from '@/lib/performance/api';
 import { PerformanceGoal } from '@/lib/performance/types';
 
@@ -11,7 +11,9 @@ interface CreateGoalDialogProps {
 }
 
 export default function CreateGoalDialog({ onClose, onGoalCreated }: CreateGoalDialogProps) {
-  const { tokens, user } = useAuth();
+  const { state } = useAuth();
+  const tokens = state.tokens;
+  const user = state.user;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -41,7 +43,7 @@ export default function CreateGoalDialog({ onClose, onGoalCreated }: CreateGoalD
       const payload = {
         title: formData.title,
         description: formData.description,
-        ownerId: user.userId,
+        ownerId: user.id,
         startDate: formData.startDate,
         dueDate: formData.dueDate || null,
       };

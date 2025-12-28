@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/lib/auth/useAuth';
+import { useAuth } from '@/lib/auth/context';
 import { performanceApi } from '@/lib/performance/api';
 import { PerformanceGoal, PerformanceReview } from '@/lib/performance/types';
 import GoalsList from '@/components/performance/GoalsList';
@@ -10,7 +10,9 @@ import CreateGoalDialog from '@/components/performance/CreateGoalDialog';
 import CreateReviewDialog from '@/components/performance/CreateReviewDialog';
 
 export default function PerformancePage() {
-  const { tokens, user, loading: authLoading } = useAuth();
+  const { state } = useAuth();
+  const tokens = state.tokens;
+  const isAuthenticated = state.status === 'authenticated';
   const [goals, setGoals] = useState<PerformanceGoal[]>([]);
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +22,10 @@ export default function PerformancePage() {
   const [activeTab, setActiveTab] = useState<'goals' | 'reviews'>('goals');
 
   useEffect(() => {
-    if (!authLoading && tokens) {
+    if (isAuthenticated && tokens) {
       loadData();
     }
-  }, [authLoading, tokens]);
+  }, [isAuthenticated, tokens]);
 
   const loadData = async () => {
     if (!tokens) return;

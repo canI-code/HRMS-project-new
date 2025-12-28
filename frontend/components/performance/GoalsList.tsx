@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/useAuth';
+import { useAuth } from '@/lib/auth/context';
 import { performanceApi } from '@/lib/performance/api';
 import { PerformanceGoal } from '@/lib/performance/types';
 import { useState } from 'react';
@@ -11,7 +11,8 @@ interface GoalsListProps {
 }
 
 export default function GoalsList({ goals, onGoalUpdated }: GoalsListProps) {
-  const { tokens } = useAuth();
+  const { state } = useAuth();
+  const tokens = state.tokens;
   const [updatingGoalId, setUpdatingGoalId] = useState<string | null>(null);
 
   const handleProgressUpdate = async (goalId: string, delta: number) => {

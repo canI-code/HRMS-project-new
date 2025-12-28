@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/auth/useAuth';
+import { useAuth } from '@/lib/auth/context';
 import { performanceApi } from '@/lib/performance/api';
 import { PerformanceReview } from '@/lib/performance/types';
 
@@ -11,7 +11,9 @@ interface CreateReviewDialogProps {
 }
 
 export default function CreateReviewDialog({ onClose, onReviewCreated }: CreateReviewDialogProps) {
-  const { tokens, user } = useAuth();
+  const { state } = useAuth();
+  const tokens = state.tokens;
+  const user = state.user;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -38,8 +40,8 @@ export default function CreateReviewDialog({ onClose, onReviewCreated }: CreateR
       setError(null);
 
       const payload = {
-        revieweeId: user.userId,
-        reviewerId: user.userId,
+        revieweeId: user.id,
+        reviewerId: user.id,
         cycle: formData.cycle,
         periodStart: new Date(formData.periodStart).toISOString(),
         periodEnd: new Date(formData.periodEnd).toISOString(),
