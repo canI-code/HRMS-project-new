@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { SalaryStructureModel, ISalaryStructure, IStructureComponent } from '../models/SalaryStructure';
 import { PayrollRunModel, IPayrollRun, PayrollRunStatus } from '../models/PayrollRun';
 import { PayslipModel, IPayslip, IPayslipComponent } from '../models/Payslip';
+import { EmployeeSalaryModel, IEmployeeSalary } from '../models/EmployeeSalary';
 import { AppError } from '@/shared/utils/AppError';
 import { auditLogStore } from '@/shared/middleware/auditLogger';
 import { AuditAction } from '@/shared/types/common';
@@ -261,8 +262,70 @@ class PayrollService {
     return PayslipModel.find({ payrollRunId: runId, organizationId });
   }
 
+  async listPayslipsForEmployee(employeeId: string, organizationId: string): Promise<IPayslip[]> {
+    return PayslipModel.find({ employeeId, organizationId })
+      .populate('payrollRunId', 'periodStart periodEnd status')
+      .populate('employeeId', 'firstName lastName employeeId department designation')
+      .sort({ createdAt: -1 });
+  }
+
   async getPayslip(payslipId: string, organizationId: string): Promise<IPayslip | null> {
-    return PayslipModel.findOne({ _id: payslipId, organizationId });
+    return PayslipModel.findOne({ _id: payslipId, organizationId })
+      .populate('payrollRunId', 'periodStart periodEnd status')
+      .populate('employeeId', 'employeeCode personal professional');
+  }
+
+  // Employee Salary Management
+  async assignSalaryToEmployee(
+    organizationId: string,
+    employeeId: string,
+    salaryStructureId: string,
+    baseSalary: number,
+    effectiveFrom: Date,
+    userId: string,
+    remarks?: string
+  ): Promise<IEmployeeSalary> {
+    // Deactivate previous salary assignments
+    await EmployeeSalaryModel.updateMany(
+      { organizationId, employeeId, status: 'active' },
+      { status: 'inactive', effectiveTo: new Date() }
+    );
+
+    const employeeSalary = await EmployeeSalaryModel.create({
+      organizationId: new Types.ObjectId(organizationId),
+      employeeId: new Types.ObjectId(employeeId),
+      salaryStructureId: new Types.ObjectId(salaryStructureId),
+      baseSalary,
+      effectiveFrom,
+      status: 'active',
+      remarks,
+      createdBy: new Types.ObjectId(userId),
+    });
+
+    return employeeSalary;
+  }
+
+  async getActiveEmployeeSalary(organizationId: string, employeeId: string): Promise<IEmployeeSalary | null> {
+    return EmployeeSalaryModel.findOne({ organizationId, employeeId, status: 'active' })
+      .populate('salaryStructureId')
+      .populate('employeeId', 'personal.firstName personal.lastName professional.department professional.title employeeCode');
+  }
+
+  async listEmployeesWithSalary(organizationId: string): Promise<Array<{ employeeId: any; salary: IEmployeeSalary | null }>> {
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employees = await EmployeeModel.find({ 
+      organizationId, 
+      'professional.status': 'active' 
+    }).select('personal.firstName personal.lastName professional.department professional.title employeeCode');
+
+    const employeesWithSalary = await Promise.all(
+      employees.map(async (emp) => {
+        const salary = await this.getActiveEmployeeSalary(organizationId, emp._id.toString());
+        return { employeeId: emp, salary };
+      })
+    );
+
+    return employeesWithSalary;
   }
 }
 

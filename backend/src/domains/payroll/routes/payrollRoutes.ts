@@ -133,6 +133,121 @@ router.get(
  */
 
 router.get(
+  '/my-payslips',
+  authenticate,
+  payrollController.listMyPayslips.bind(payrollController)
+);
+/**
+ * @openapi
+ * /payroll/my-payslips:
+ *   get:
+ *     summary: Get current employee's payslips
+ *     tags: [payroll]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of employee's payslips
+ */
+
+router.get(
+  '/my-payslips/:payslipId',
+  authenticate,
+  payrollController.getMyPayslip.bind(payrollController)
+);
+/**
+ * @openapi
+ * /payroll/my-payslips/{payslipId}:
+ *   get:
+ *     summary: Get specific payslip for current employee (self-service)
+ *     tags: [payroll]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: payslipId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Payslip details
+ */
+
+router.post(
+  '/employees/assign-salary',
+  checkPermission('payroll-structure', 'create'),
+  payrollController.assignSalary.bind(payrollController)
+);
+/**
+ * @openapi
+ * /payroll/employees/assign-salary:
+ *   post:
+ *     summary: Assign salary structure to employee
+ *     tags: [payroll]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               employeeId:
+ *                 type: string
+ *               salaryStructureId:
+ *                 type: string
+ *               baseSalary:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Salary assigned
+ */
+
+router.get(
+  '/employees/with-salary',
+  checkPermission('payroll', 'read'),
+  payrollController.listEmployeesWithSalary.bind(payrollController)
+);
+/**
+ * @openapi
+ * /payroll/employees/with-salary:
+ *   get:
+ *     summary: List all employees with their salary information
+ *     tags: [payroll]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Employees with salary
+ */
+
+router.get(
+  '/employees/:employeeId/salary',
+  checkPermission('payroll', 'read'),
+  payrollController.getEmployeeSalary.bind(payrollController)
+);
+/**
+ * @openapi
+ * /payroll/employees/{employeeId}/salary:
+ *   get:
+ *     summary: Get employee's active salary
+ *     tags: [payroll]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: employeeId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Employee salary details
+ */
+
+router.get(
   '/payslips/:payslipId',
   checkPermission('payroll', 'read'),
   payrollController.getPayslip.bind(payrollController)

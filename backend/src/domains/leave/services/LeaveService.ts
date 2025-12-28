@@ -53,11 +53,12 @@ export class LeaveService {
     return leave;
   }
 
-  static async listLeaves(ctx: RequestContext, { employeeId, status }: { employeeId?: Types.ObjectId; status?: LeaveStatus } = {}) {
+  static async listLeaves(ctx: RequestContext, { employeeId, status, excludeEmployeeId }: { employeeId?: Types.ObjectId; status?: LeaveStatus; excludeEmployeeId?: Types.ObjectId } = {}) {
     const q: any = { organizationId: ctx.organizationId, isDeleted: { $ne: true } };
     if (employeeId) q.employeeId = employeeId;
     if (status) q.status = status;
-    return await LeaveModel.find(q).limit(100);
+    if (excludeEmployeeId) q.employeeId = { $ne: excludeEmployeeId };
+    return await LeaveModel.find(q).populate('employeeId', 'firstName lastName email').limit(100);
   }
 
   static async approveLeave(ctx: RequestContext, leaveId: Types.ObjectId, approverComments?: string) {

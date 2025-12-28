@@ -58,12 +58,7 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
   );
   const [status, setStatus] = useState<EmployeeStatus>(employee?.professional.status || "active");
 
-  // Payroll information
-  const [baseSalary, setBaseSalary] = useState(employee?.payroll?.baseSalary?.toString() || "");
-  const [salaryCurrency, setSalaryCurrency] = useState(employee?.payroll?.salaryCurrency || "USD");
-  const [variablePayPercent, setVariablePayPercent] = useState(
-    employee?.payroll?.variablePayPercent?.toString() || ""
-  );
+  // Removed payroll information - salary should be assigned through Payroll module
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,13 +100,7 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           startDate,
           ...(mode === "create" && { status }),
         },
-        ...((baseSalary || variablePayPercent) && {
-          payroll: {
-            ...(salaryCurrency && { salaryCurrency }),
-            ...(baseSalary && { baseSalary: parseFloat(baseSalary) }),
-            ...(variablePayPercent && { variablePayPercent: parseFloat(variablePayPercent) }),
-          },
-        }),
+        // Removed payroll - salary assignment is now only through Payroll module
       };
 
       await onSubmit(payload);
@@ -402,47 +391,12 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
         </div>
       </div>
 
-      {/* Payroll Information */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900">Payroll Information</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Base Salary</label>
-            <input
-              type="number"
-              step="0.01"
-              value={baseSalary}
-              onChange={(e) => setBaseSalary(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              placeholder="50000"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Currency</label>
-            <input
-              type="text"
-              value={salaryCurrency}
-              onChange={(e) => setSalaryCurrency(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              placeholder="USD"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Variable Pay %</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max="100"
-              value={variablePayPercent}
-              onChange={(e) => setVariablePayPercent(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              placeholder="10"
-            />
-          </div>
-        </div>
+      {/* Note about Salary Assignment */}
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+        <p className="text-sm text-blue-900">
+          <strong>💡 Note:</strong> Employee salaries are managed through the <strong>Payroll</strong> module. 
+          After creating this employee, assign their salary structure and base pay in the Payroll → Assign Salary section.
+        </p>
       </div>
 
       {/* Actions */}

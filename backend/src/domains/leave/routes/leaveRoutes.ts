@@ -8,7 +8,13 @@ const router = Router();
 router.use(authenticate);
 
 // Request a leave
-router.post('/', checkPermission('leaves', 'create'), LeaveController.request);
+router.post(
+	'/',
+	checkPermission('leaves', 'create', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.request
+);
 /**
  * @openapi
  * /leaves:
@@ -29,7 +35,13 @@ router.post('/', checkPermission('leaves', 'create'), LeaveController.request);
  */
 
 // Query and get
-router.get('/', checkPermission('leaves', 'read'), LeaveController.list);
+router.get(
+	'/',
+	checkPermission('leaves', 'read', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.list
+);
 /**
  * @openapi
  * /leaves:
@@ -42,7 +54,13 @@ router.get('/', checkPermission('leaves', 'read'), LeaveController.list);
  *       200:
  *         description: List of leave requests
  */
-router.get('/:id', checkPermission('leaves', 'read'), LeaveController.get);
+router.get(
+	'/:id',
+	checkPermission('leaves', 'read', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.get
+);
 /**
  * @openapi
  * /leaves/{id}:
@@ -63,7 +81,13 @@ router.get('/:id', checkPermission('leaves', 'read'), LeaveController.get);
  */
 
 // Workflow actions
-router.post('/:id/approve', checkPermission('leaves', 'update'), LeaveController.approve);
+router.post(
+	'/:id/approve',
+	checkPermission('leaves', 'update', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.approve
+);
 /**
  * @openapi
  * /leaves/{id}/approve:
@@ -82,7 +106,13 @@ router.post('/:id/approve', checkPermission('leaves', 'update'), LeaveController
  *       200:
  *         description: Leave request approved
  */
-router.post('/:id/reject', checkPermission('leaves', 'update'), LeaveController.reject);
+router.post(
+	'/:id/reject',
+	checkPermission('leaves', 'update', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.reject
+);
 /**
  * @openapi
  * /leaves/{id}/reject:
@@ -101,7 +131,13 @@ router.post('/:id/reject', checkPermission('leaves', 'update'), LeaveController.
  *       200:
  *         description: Leave request rejected
  */
-router.post('/:id/cancel', checkPermission('leaves', 'update'), LeaveController.cancel);
+router.post(
+	'/:id/cancel',
+	checkPermission('leaves', 'update', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.cancel
+);
 /**
  * @openapi
  * /leaves/{id}/cancel:

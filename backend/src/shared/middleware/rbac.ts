@@ -42,9 +42,9 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'attendance', action: 'update', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
   
   // Leave management
-  { resource: 'leave', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
-  { resource: 'leave', action: 'create', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
-  { resource: 'leave', action: 'approve', minRole: UserRole.MANAGER, organizationBoundary: true },
+  { resource: 'leaves', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
+  { resource: 'leaves', action: 'create', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
+  { resource: 'leaves', action: 'update', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
   
   // Payroll management
   { resource: 'payroll', action: 'read', minRole: UserRole.HR_ADMIN, allowSelfAccess: true, organizationBoundary: true },

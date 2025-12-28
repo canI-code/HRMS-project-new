@@ -37,23 +37,36 @@
 - [x] Hierarchy visualization
 
 ## Phase 6: Attendance Module
-- [ ] Check-in/check-out interface
-- [ ] Attendance calendar view
-- [ ] Monthly attendance report
-- [ ] Attendance policy settings
+- [x] Check-in/check-out interface
+- [x] Attendance calendar view
+- [x] Monthly attendance report
+- [x] Attendance policy settings
 
-## Phase 7: Leave Module
-- [ ] Leave request form
-- [ ] Leave balance dashboard
-- [ ] Manager approval interface
-- [ ] Leave calendar view
-- [ ] Leave policy configuration
+## Phase 7: Leave Module ✅
+- [x] Leave request form
+- [x] Leave balance dashboard (basic policy config added)
+- [x] Manager approval interface
+- [x] Leave calendar view
+- [x] Leave policy configuration
+- [x] My Leaves view (self-access)
+- [x] Team Leaves view (manager/admin)
 
-## Phase 8: Payroll Module
-- [ ] Salary structure builder
-- [ ] Payroll run interface
-- [ ] Payslip viewer/download
+**Note:** Phase 7 has additional improvements planned:
+- Better leave balance tracking per employee
+- Leave carry-forward functionality
+- Leave encashment module
+- Enhanced calendar with filters
+- Leave reports and analytics
+- Integration with payroll for leave deductions
+
+## Phase 8: Payroll Module (CURRENT)
+- [x] Salary structure builder
+- [x] Payroll run interface  
+- [x] Payslip viewer/download
+- [x] My Payslips endpoint (backend)
 - [ ] Payroll reports
+- [ ] Integration with employees for automatic structure assignment
+- [ ] Payroll approval workflow (if needed)
 
 ## Phase 9: Performance Module
 - [ ] Goal creation/tracking
@@ -94,12 +107,26 @@
 - [ ] E2E tests (Playwright/Cypress)
 - [ ] Visual regression tests
 
-## Phase 15: Deployment
-- [ ] Build optimization
-- [ ] Environment configs
-- [ ] CI/CD pipeline
+---
+
+## Current Status
+✅ **Phases 1-7 Complete**  
+🚀 **Phase 8 (Payroll) - In Progress**
+
+### Completed Modules
+- Foundation & Infrastructure
+- Authentication & Authorization
+- Employee Management
+- Attendance Tracking
+- Leave Management (with planned enhancements)
+
+### Next Up
+- Payroll Module (Phase 8)
+- Performance Management (Phase 9)
+- Document Management (Phase 10)
 - [ ] Production deployment
 
 ---
 
 **Current Status**: Foundation complete. Ready for API client setup.
+**Current Status**: Phases 1-6 done. Next up: Phase 7 – Leave Module.

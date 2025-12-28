@@ -56,15 +56,20 @@ export class PayrollController {
       }
 
       const { periodStart, periodEnd, employees } = req.body;
-      if (!periodStart || !periodEnd || !Array.isArray(employees) || employees.length === 0) {
-        throw new AppError('Invalid payroll run payload', 400, 'VALIDATION_ERROR');
+      if (!periodStart || !periodEnd) {
+        throw new AppError('Period start and end dates are required', 400, 'VALIDATION_ERROR');
       }
+
+      // If employees array is not provided, backend will fetch all employees with active salary structures
+      const employeesArray = employees && Array.isArray(employees) && employees.length > 0 
+        ? employees 
+        : [];
 
       const run = await payrollService.startPayrollRun(
         context.organizationId.toString(),
         new Date(periodStart),
         new Date(periodEnd),
-        employees,
+        employeesArray,
         context.userId.toString(),
         context.requestId
       );
@@ -112,6 +117,80 @@ export class PayrollController {
     }
   }
 
+  async listMyPayslips(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      // Find the employee record for the current user
+      const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+      const employee = await EmployeeModel.findOne({ 
+        userId: context.userId, 
+        organizationId: context.organizationId 
+      });
+
+      if (!employee) {
+        throw new AppError('Employee record not found', 404, 'EMPLOYEE_NOT_FOUND');
+      }
+
+      const payslips = await payrollService.listPayslipsForEmployee(
+        employee._id.toString(), 
+        context.organizationId.toString()
+      );
+      res.json(payslips);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyPayslip(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const payslipId = req.params['payslipId'];
+      if (!payslipId) {
+        throw new AppError('Payslip ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      // Find the employee record for the current user
+      const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+      const employee = await EmployeeModel.findOne({ 
+        userId: context.userId, 
+        organizationId: context.organizationId 
+      });
+
+      if (!employee) {
+        throw new AppError('Employee record not found', 404, 'EMPLOYEE_NOT_FOUND');
+      }
+
+      // Get the payslip and verify it belongs to this employee
+      const payslip = await payrollService.getPayslip(payslipId, context.organizationId.toString());
+      if (!payslip) {
+        throw new AppError('Payslip not found', 404, 'NOT_FOUND');
+      }
+
+      // Security check: ensure payslip belongs to the requesting employee
+      const payslipEmployeeId = payslip.employeeId instanceof require('mongoose').Types.ObjectId 
+        ? payslip.employeeId.toString() 
+        : (payslip.employeeId._id ? payslip.employeeId._id.toString() : payslip.employeeId.toString());
+      
+      const currentEmployeeId = employee._id.toString();
+      
+      if (payslipEmployeeId !== currentEmployeeId) {
+        throw new AppError(`Access denied: You can only view your own payslips. Expected: ${currentEmployeeId}, Got: ${payslipEmployeeId}`, 403, 'FORBIDDEN');
+      }
+
+      res.json(payslip);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getPayslip(req: Request, res: Response, next: NextFunction) {
     try {
       const context = req.user;
@@ -127,6 +206,75 @@ export class PayrollController {
         throw new AppError('Payslip not found', 404, 'NOT_FOUND');
       }
       res.json(payslip);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async assignSalary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const { employeeId, salaryStructureId, baseSalary, effectiveFrom, remarks } = req.body;
+      if (!employeeId || !salaryStructureId || !baseSalary) {
+        throw new AppError('Employee ID, salary structure ID, and base salary are required', 400, 'VALIDATION_ERROR');
+      }
+
+      const salary = await payrollService.assignSalaryToEmployee(
+        context.organizationId.toString(),
+        employeeId,
+        salaryStructureId,
+        baseSalary,
+        effectiveFrom ? new Date(effectiveFrom) : new Date(),
+        context.userId.toString(),
+        remarks
+      );
+
+      res.status(201).json(salary);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEmployeeSalary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const employeeId = req.params['employeeId'];
+      if (!employeeId) {
+        throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      const salary = await payrollService.getActiveEmployeeSalary(
+        context.organizationId.toString(),
+        employeeId
+      );
+
+      if (!salary) {
+        throw new AppError('No active salary found for employee', 404, 'NOT_FOUND');
+      }
+
+      res.json(salary);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listEmployeesWithSalary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const employees = await payrollService.listEmployeesWithSalary(context.organizationId.toString());
+      res.json(employees);
     } catch (error) {
       next(error);
     }

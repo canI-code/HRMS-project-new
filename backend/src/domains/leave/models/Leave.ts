@@ -2,7 +2,7 @@ import { Schema, model, Types } from 'mongoose';
 import { BaseDocument } from '@/shared/types/common';
 
 export enum LeaveType {
-  ANNUAL = 'annual',
+  EARNED = 'earned',
   SICK = 'sick',
   UNPAID = 'unpaid',
   CASUAL = 'casual',
