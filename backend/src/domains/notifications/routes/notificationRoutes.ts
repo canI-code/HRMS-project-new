@@ -46,6 +46,7 @@ router.post('/send', checkPermission('notifications', 'create'), notificationCon
  *         description: Notification queued for delivery
  */
 router.patch('/preferences', checkPermission('notifications', 'preferences'), notificationController.updatePreferences.bind(notificationController));
+router.get('/preferences', checkPermission('notifications', 'preferences'), notificationController.getPreferences.bind(notificationController));
 /**
  * @openapi
  * /notifications/preferences:
@@ -65,6 +66,13 @@ router.patch('/preferences', checkPermission('notifications', 'preferences'), no
  *         description: Preferences updated
  */
 router.get('/logs', checkPermission('notifications', 'read'), notificationController.listLogs.bind(notificationController));
+router.get(
+	'/logs/mine',
+	checkPermission('notifications', 'read', { getUserId: (req) => req.user?.userId }),
+	notificationController.listMyLogs.bind(notificationController)
+);
+
+router.get('/templates', checkPermission('notifications', 'read'), notificationController.listTemplates.bind(notificationController));
 /**
  * @openapi
  * /notifications/logs:

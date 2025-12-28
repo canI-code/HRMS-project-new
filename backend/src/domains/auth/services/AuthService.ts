@@ -29,14 +29,19 @@ export class AuthService {
   static async login(loginData: LoginRequest): Promise<LoginResponse> {
     const { email, password, mfaToken } = loginData;
 
+    logger.info('Login attempt', { email });
+
     // Find user with password field
     const user = await User.findOne({ email, isActive: true, isDeleted: false })
       .select('+password +mfaSecret');
 
     if (!user) {
       logger.warn('Login attempt with invalid email', { email });
+      logger.debug('User lookup failed - no user found', { email, isActive: true, isDeleted: false });
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
     }
+
+    logger.debug('User found in DB', { email, role: user.role, hasPassword: !!user.password, passwordLen: user.password?.length || 0 });
 
     // Store organizationId as string before any operations
     const organizationId = user.organizationId.toString();
@@ -53,7 +58,9 @@ export class AuthService {
     }
 
     // Verify password
+    logger.debug('Starting password comparison', { email, storedHashLen: user.password.length, providedPassLen: password.length });
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    logger.debug('Password comparison result', { email, isPasswordValid });
     
     if (!isPasswordValid) {
       // Increment failed login attempts

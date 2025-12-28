@@ -77,6 +77,22 @@ export class NotificationController {
     }
   }
 
+  async getPreferences(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+
+      const pref = await notificationService.getPreferences(
+        context.organizationId.toString(),
+        context.userId.toString(),
+      );
+
+      res.json(pref);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async listLogs(req: Request, res: Response, next: NextFunction) {
     try {
       const context = req.user;
@@ -89,6 +105,37 @@ export class NotificationController {
       );
 
       res.json(logs);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listMyLogs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+
+      const { category } = req.query;
+      const logs = await notificationService.listLogsForUser(
+        context.organizationId.toString(),
+        context.userId.toString(),
+        category ? String(category) : undefined
+      );
+
+      res.json(logs);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listTemplates(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+
+      const templates = await notificationService.listTemplates(context.organizationId.toString());
+
+      res.json(templates);
     } catch (error) {
       next(error);
     }

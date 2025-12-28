@@ -80,16 +80,17 @@
 - [x] Version history viewer
 - [x] Access control UI
 
-## Phase 11: Notifications
-- [ ] Notification center
-- [ ] Real-time notifications
-- [ ] Email preferences
-- [ ] Notification templates
+## Phase 11: Notifications ✅
+- [x] Notification center
+- [x] Real-time notifications
+- [x] Email preferences
+- [x] Notification templates
 
 ## Phase 12: Admin Settings
-- [ ] Organization settings
-- [ ] Role management UI
-- [ ] Audit log viewer
+- [x] Organization settings
+- [x] Role management UI
+- [x] Audit log viewer
+- [x] Users tab (super admin): list, search, edit roles, activate/deactivate
 
 ## Phase 13: Polish & Optimization
 - [ ] Loading states
@@ -110,9 +111,9 @@
 ---
 
 ## Current Status
-✅ **Phases 1-7 Complete**  
-🚀 **Phase 8 (Payroll) - In Progress**
-✅ **Phase 10 (Documents) - Complete**
+✅ **Phases 1-7, 10-12 Complete**  
+🚀 **Phase 8 (Payroll) - In Progress**  
+⏳ **Phase 9 (Performance) - Not started**
 
 ### Completed Modules
 - Foundation & Infrastructure
@@ -120,13 +121,13 @@
 - Employee Management
 - Attendance Tracking
 - Leave Management (with planned enhancements)
+- Notifications
+- Documents
+- Admin (roles, audit, users tab)
 
 ### Next Up
-- Payroll Module (Phase 8)
+- Payroll reports & approvals (Phase 8)
 - Performance Management (Phase 9)
-- [ ] Production deployment
-
----
-
-**Current Status**: Foundation complete. Ready for API client setup.
-**Current Status**: Phases 1-6 done. Next up: Phase 7 – Leave Module.
+- Polish & a11y (Phase 13)
+- Testing (Phase 14)
+- Production deployment

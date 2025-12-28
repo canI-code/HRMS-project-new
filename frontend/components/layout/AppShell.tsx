@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { label: "Performance", href: "/performance", roles: ["super_admin", "hr_admin", "manager"] },
   { label: "Documents", href: "/documents", roles: ["super_admin", "hr_admin", "manager", "employee"] },
   { label: "Notifications", href: "/notifications", roles: ["super_admin", "hr_admin", "manager", "employee"] },
+  { label: "Admin", href: "/admin", roles: ["super_admin", "hr_admin"] },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

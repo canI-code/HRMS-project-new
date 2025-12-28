@@ -66,13 +66,13 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'documents', action: 'delete', minRole: UserRole.MANAGER, organizationBoundary: true },
 
   // Notification management
-  { resource: 'notifications', action: 'read', minRole: UserRole.MANAGER, organizationBoundary: true },
+  { resource: 'notifications', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'notifications', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'notifications', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'notifications', action: 'preferences', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   
   // System administration
-  { resource: 'admin', action: 'read', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },
+  { resource: 'admin', action: 'read', minRole: UserRole.HR_ADMIN, organizationBoundary: false },
   { resource: 'admin', action: 'create', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },
   { resource: 'admin', action: 'update', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },
   { resource: 'admin', action: 'delete', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },

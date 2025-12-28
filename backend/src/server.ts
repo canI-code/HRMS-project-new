@@ -16,6 +16,7 @@ import { payrollRoutes } from '@/domains/payroll/routes/payrollRoutes';
 import { performanceRoutes } from '@/domains/performance/routes/performanceRoutes';
 import { documentRoutes } from '@/domains/documents/routes/documentRoutes';
 import { notificationRoutes } from '@/domains/notifications/routes/notificationRoutes';
+import { adminRoutes } from '@/domains/admin/routes/adminRoutes';
 import { initJobs } from '@/jobs';
 // Swagger docs setup will be attempted dynamically to avoid test-time dependency issues
 
@@ -106,6 +107,7 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/performance', performanceRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Versioned mounts
 app.use(`${apiBase}/auth`, authRoutes);
@@ -116,6 +118,7 @@ app.use(`${apiBase}/payroll`, payrollRoutes);
 app.use(`${apiBase}/performance`, performanceRoutes);
 app.use(`${apiBase}/documents`, documentRoutes);
 app.use(`${apiBase}/notifications`, notificationRoutes);
+app.use(`${apiBase}/admin`, adminRoutes);
 
 // Optional Swagger UI for API docs (skips if deps unavailable)
 try {
@@ -151,6 +154,7 @@ try {
       'src/domains/performance/routes/*.ts',
       'src/domains/documents/routes/*.ts',
       'src/domains/notifications/routes/*.ts',
+      'src/domains/admin/routes/*.ts',
       'src/domains/leave/routes/*.ts',
     ],
   };

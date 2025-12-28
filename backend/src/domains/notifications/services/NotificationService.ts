@@ -140,6 +140,25 @@ class NotificationService {
     return pref;
   }
 
+  async getPreferences(
+    organizationId: string,
+    userId: string
+  ): Promise<INotificationPreference> {
+    const pref = await NotificationPreferenceModel.findOneAndUpdate(
+      { organizationId, userId },
+      {
+        $setOnInsert: {
+          enabledChannels: ALL_CHANNELS,
+          mutedCategories: [],
+          optOutAll: false,
+        },
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return pref;
+  }
+
   async sendWorkflowNotification(
     organizationId: string,
     dispatch: NotificationDispatchPayload,
@@ -238,6 +257,22 @@ class NotificationService {
       query['category'] = category;
     }
     return NotificationLogModel.find(query).sort({ createdAt: -1 }).limit(50);
+  }
+
+  async listLogsForUser(
+    organizationId: string,
+    userId: string,
+    category?: string
+  ) {
+    const query: Record<string, unknown> = { organizationId, userId };
+    if (category) {
+      query['category'] = category;
+    }
+    return NotificationLogModel.find(query).sort({ createdAt: -1 }).limit(50);
+  }
+
+  async listTemplates(organizationId: string) {
+    return NotificationTemplateModel.find({ organizationId, active: true }).sort({ createdAt: -1 }).limit(50);
   }
 }
 
