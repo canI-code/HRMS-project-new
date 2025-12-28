@@ -90,6 +90,39 @@ export class PerformanceController {
     }
   }
 
+  async listMyGoals(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const goals = await performanceService.listMyGoals(
+        context.organizationId.toString(),
+        context.userId.toString()
+      );
+
+      res.json(goals);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listGoals(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const goals = await performanceService.listGoals(context.organizationId.toString());
+
+      res.json(goals);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async createReview(req: Request, res: Response, next: NextFunction) {
     try {
       const context = req.user;
@@ -166,6 +199,39 @@ export class PerformanceController {
       }
 
       res.json(review);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listMyReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const reviews = await performanceService.listMyReviews(
+        context.organizationId.toString(),
+        context.userId.toString()
+      );
+
+      res.json(reviews);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const reviews = await performanceService.listReviews(context.organizationId.toString());
+
+      res.json(reviews);
     } catch (error) {
       next(error);
     }

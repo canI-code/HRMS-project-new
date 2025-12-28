@@ -100,6 +100,19 @@ class PerformanceService {
     return PerformanceGoalModel.findOne({ _id: goalId, organizationId });
   }
 
+  async listMyGoals(organizationId: string, userId: string): Promise<IPerformanceGoal[]> {
+    return PerformanceGoalModel.find({
+      organizationId: new Types.ObjectId(organizationId),
+      ownerId: new Types.ObjectId(userId),
+    }).sort({ createdAt: -1 });
+  }
+
+  async listGoals(organizationId: string): Promise<IPerformanceGoal[]> {
+    return PerformanceGoalModel.find({
+      organizationId: new Types.ObjectId(organizationId),
+    }).sort({ createdAt: -1 });
+  }
+
   async updateGoalProgress(
     organizationId: string,
     goalId: string,
@@ -232,6 +245,22 @@ class PerformanceService {
 
   async getReview(reviewId: string, organizationId: string): Promise<IPerformanceReview | null> {
     return PerformanceReviewModel.findOne({ _id: reviewId, organizationId });
+  }
+
+  async listMyReviews(organizationId: string, userId: string): Promise<IPerformanceReview[]> {
+    return PerformanceReviewModel.find({
+      organizationId: new Types.ObjectId(organizationId),
+      $or: [
+        { revieweeId: new Types.ObjectId(userId) },
+        { reviewerId: new Types.ObjectId(userId) },
+      ],
+    }).sort({ createdAt: -1 });
+  }
+
+  async listReviews(organizationId: string): Promise<IPerformanceReview[]> {
+    return PerformanceReviewModel.find({
+      organizationId: new Types.ObjectId(organizationId),
+    }).sort({ createdAt: -1 });
   }
 }
 

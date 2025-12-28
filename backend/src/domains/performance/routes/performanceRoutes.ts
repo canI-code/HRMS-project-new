@@ -7,6 +7,42 @@ const router = Router();
 
 router.use(authenticate);
 
+router.get(
+  '/goals/my',
+  checkPermission('performance', 'read'),
+  performanceController.listMyGoals.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/goals/my:
+ *   get:
+ *     summary: List my performance goals
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of performance goals
+ */
+
+router.get(
+  '/goals',
+  checkPermission('performance', 'read'),
+  performanceController.listGoals.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/goals:
+ *   get:
+ *     summary: List all performance goals
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all performance goals
+ */
+
 router.post(
   '/goals',
   checkPermission('performance', 'create'),
@@ -162,5 +198,39 @@ router.get(
  *       200:
  *         description: Performance review details
  */
+router.get(
+  '/reviews/my',
+  checkPermission('performance', 'read'),
+  performanceController.listMyReviews.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/reviews/my:
+ *   get:
+ *     summary: List my performance reviews
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of my performance reviews
+ */
 
+router.get(
+  '/reviews',
+  checkPermission('performance', 'read'),
+  performanceController.listReviews.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/reviews:
+ *   get:
+ *     summary: List all performance reviews
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all performance reviews
+ */
 export { router as performanceRoutes };
