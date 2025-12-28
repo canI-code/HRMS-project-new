@@ -58,7 +58,7 @@ export interface PerformanceReview {
 export interface CreateGoalPayload {
   title: string;
   description?: string;
-  ownerId: string;
+  ownerId?: string; // Optional - backend will use logged-in user's employee ID if not provided
   startDate?: string;
   dueDate?: string | null;
   metrics?: { name: string; target: number; current?: number; unit?: string }[];
@@ -69,8 +69,8 @@ export interface UpdateGoalProgressPayload {
 }
 
 export interface CreateReviewPayload {
-  revieweeId: string;
-  reviewerId: string;
+  revieweeId?: string; // Optional - backend will use logged-in user's employee ID if not provided
+  reviewerId?: string; // Optional - backend will use logged-in user's employee ID if not provided
   cycle: string;
   periodStart: string;
   periodEnd: string;

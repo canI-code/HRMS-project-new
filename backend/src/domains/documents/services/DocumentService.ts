@@ -38,6 +38,20 @@ export const isRoleAllowedForDocument = (policy: IAccessPolicy, role: UserRole):
   return policy.allowedRoles.includes(role);
 };
 
+export const canUserAccessDocument = (
+  doc: IDocument,
+  role: UserRole,
+  userId: string
+): boolean => {
+  if (role === UserRole.SUPER_ADMIN) return true;
+
+  const allowedByPolicy = isRoleAllowedForDocument(doc.accessPolicy, role);
+  const isCreator = doc.createdBy?.toString() === userId;
+  const uploadedByUser = doc.versions?.some(v => v.uploadedBy.toString() === userId);
+
+  return allowedByPolicy || isCreator || uploadedByUser;
+};
+
 export const appendVersionHistory = (
   history: IDocumentVersion[],
   nextVersion: IDocumentVersion
@@ -233,12 +247,67 @@ class DocumentService {
     return document;
   }
 
+  async unarchiveDocument(
+    organizationId: string,
+    documentId: string,
+    userId: string,
+    requestId: string
+  ): Promise<IDocument> {
+    const document = await DocumentModel.findOne({ _id: documentId, organizationId });
+    if (!document) {
+      throw new AppError('Document not found', 404, 'NOT_FOUND');
+    }
+
+    document.status = 'active';
+    document.retentionUntil = null;
+    document.updatedBy = new Types.ObjectId(userId);
+    await document.save();
+
+    await auditLogStore.add({
+      organizationId: new Types.ObjectId(organizationId),
+      userId: new Types.ObjectId(userId),
+      action: AuditAction.UPDATE,
+      resource: 'documents',
+      resourceId: new Types.ObjectId(document._id.toString()),
+      success: true,
+      changes: { after: { status: 'active', retentionUntil: null } },
+      metadata: {
+        ipAddress: 'internal',
+        userAgent: 'document-service',
+        requestId,
+        timestamp: new Date(),
+        method: 'PATCH',
+        url: '/api/documents/:documentId/unarchive',
+      },
+    });
+
+    return document;
+  }
+
   async getDocument(documentId: string, organizationId: string): Promise<IDocument | null> {
     return DocumentModel.findOne({ _id: documentId, organizationId });
   }
 
   async listDocuments(organizationId: string, category?: string): Promise<IDocument[]> {
     const query: Record<string, unknown> = { organizationId };
+    if (category) {
+      query['category'] = normalizeCategory(category);
+    }
+    return DocumentModel.find(query).sort({ updatedAt: -1 });
+  }
+
+  async listDocumentsForUser(
+    organizationId: string,
+    userId: string,
+    category?: string
+  ): Promise<IDocument[]> {
+    const query: Record<string, unknown> = {
+      organizationId,
+      $or: [
+        { createdBy: new Types.ObjectId(userId) },
+        { 'versions.uploadedBy': new Types.ObjectId(userId) },
+      ],
+    };
     if (category) {
       query['category'] = normalizeCategory(category);
     }

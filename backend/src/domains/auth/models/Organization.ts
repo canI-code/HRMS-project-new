@@ -108,7 +108,6 @@ const organizationSchema = new Schema<IOrganization>(
       required: true,
       trim: true,
       maxlength: 100,
-      index: true,
     },
     displayName: {
       type: String,
@@ -226,7 +225,6 @@ const organizationSchema = new Schema<IOrganization>(
         enum: ['active', 'suspended', 'cancelled', 'expired'],
         required: true,
         default: 'active',
-        index: true,
       },
       startDate: {
         type: Date,

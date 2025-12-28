@@ -40,8 +40,7 @@ export default function CreateReviewDialog({ onClose, onReviewCreated }: CreateR
       setError(null);
 
       const payload = {
-        revieweeId: user.id,
-        reviewerId: user.id,
+        // revieweeId and reviewerId will be automatically set by backend from logged-in user
         cycle: formData.cycle,
         periodStart: new Date(formData.periodStart).toISOString(),
         periodEnd: new Date(formData.periodEnd).toISOString(),

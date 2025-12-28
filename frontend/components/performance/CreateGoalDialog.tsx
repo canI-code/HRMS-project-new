@@ -43,7 +43,7 @@ export default function CreateGoalDialog({ onClose, onGoalCreated }: CreateGoalD
       const payload = {
         title: formData.title,
         description: formData.description,
-        ownerId: user.id,
+        // ownerId will be automatically set by backend from logged-in user
         startDate: formData.startDate,
         dueDate: formData.dueDate || null,
       };

@@ -11,14 +11,31 @@ export class PerformanceController {
       }
 
       const { title, description, ownerId, startDate, dueDate, metrics } = req.body;
-      if (!title || !ownerId) {
-        throw new AppError('Title and ownerId are required', 400, 'VALIDATION_ERROR');
+      if (!title) {
+        throw new AppError('Title is required', 400, 'VALIDATION_ERROR');
+      }
+
+      // If ownerId is not provided, use the current user's employee ID
+      let finalOwnerId = ownerId;
+      if (!finalOwnerId) {
+        // Fetch the employee ID for the current user
+        const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+        const employee = await EmployeeModel.findOne({ 
+          userId: context.userId,
+          organizationId: context.organizationId 
+        });
+        
+        if (!employee) {
+          throw new AppError('Employee profile not found for current user', 404, 'EMPLOYEE_NOT_FOUND');
+        }
+        
+        finalOwnerId = employee._id.toString();
       }
 
       const goalPayload = {
         title,
         description,
-        ownerId,
+        ownerId: finalOwnerId,
         dueDate: dueDate ? new Date(dueDate) : null,
         metrics,
       } as const;
@@ -131,15 +148,34 @@ export class PerformanceController {
       }
 
       const { revieweeId, reviewerId, cycle, periodStart, periodEnd, goalsSnapshot } = req.body;
-      if (!revieweeId || !reviewerId || !cycle || !periodStart || !periodEnd) {
-        throw new AppError('Invalid review payload', 400, 'VALIDATION_ERROR');
+      if (!cycle || !periodStart || !periodEnd) {
+        throw new AppError('Cycle, periodStart and periodEnd are required', 400, 'VALIDATION_ERROR');
+      }
+
+      // If revieweeId or reviewerId are not provided, use the current user's employee ID
+      let finalRevieweeId = revieweeId;
+      let finalReviewerId = reviewerId;
+      
+      if (!finalRevieweeId || !finalReviewerId) {
+        const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+        const employee = await EmployeeModel.findOne({ 
+          userId: context.userId,
+          organizationId: context.organizationId 
+        });
+        
+        if (!employee) {
+          throw new AppError('Employee profile not found for current user', 404, 'EMPLOYEE_NOT_FOUND');
+        }
+        
+        if (!finalRevieweeId) finalRevieweeId = employee._id.toString();
+        if (!finalReviewerId) finalReviewerId = employee._id.toString();
       }
 
       const review = await performanceService.createReview(
         context.organizationId.toString(),
         {
-          revieweeId,
-          reviewerId,
+          revieweeId: finalRevieweeId,
+          reviewerId: finalReviewerId,
           cycle,
           periodStart: new Date(periodStart),
           periodEnd: new Date(periodEnd),

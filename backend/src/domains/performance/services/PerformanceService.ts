@@ -101,9 +101,20 @@ class PerformanceService {
   }
 
   async listMyGoals(organizationId: string, userId: string): Promise<IPerformanceGoal[]> {
+    // Need to get the employee ID from the user ID
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employee = await EmployeeModel.findOne({
+      userId: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
+    });
+
+    if (!employee) {
+      return []; // No employee profile, return empty
+    }
+
     return PerformanceGoalModel.find({
       organizationId: new Types.ObjectId(organizationId),
-      ownerId: new Types.ObjectId(userId),
+      ownerId: employee._id,
     }).sort({ createdAt: -1 });
   }
 
@@ -248,11 +259,22 @@ class PerformanceService {
   }
 
   async listMyReviews(organizationId: string, userId: string): Promise<IPerformanceReview[]> {
+    // Need to get the employee ID from the user ID
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employee = await EmployeeModel.findOne({
+      userId: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
+    });
+
+    if (!employee) {
+      return []; // No employee profile, return empty
+    }
+
     return PerformanceReviewModel.find({
       organizationId: new Types.ObjectId(organizationId),
       $or: [
-        { revieweeId: new Types.ObjectId(userId) },
-        { reviewerId: new Types.ObjectId(userId) },
+        { revieweeId: employee._id },
+        { reviewerId: employee._id },
       ],
     }).sort({ createdAt: -1 });
   }

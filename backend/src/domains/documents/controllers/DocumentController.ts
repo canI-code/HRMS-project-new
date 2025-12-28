@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { documentService } from '../services/DocumentService';
 import { AppError } from '@/shared/utils/AppError';
 import { UserRole } from '@/shared/types/common';
+import { canUserAccessDocument } from '../services/DocumentService';
 
 export class DocumentController {
   async createDocument(req: Request, res: Response, next: NextFunction) {
@@ -25,9 +26,12 @@ export class DocumentController {
         notes,
       } = req.body;
 
-      if (!title || !category || !storageKey) {
-        throw new AppError('Title, category, and storageKey are required', 400, 'VALIDATION_ERROR');
+      if (!title || !category) {
+        throw new AppError('Title and category are required', 400, 'VALIDATION_ERROR');
       }
+
+      // Generate a placeholder storageKey if not provided (for now, until file upload is implemented)
+      const finalStorageKey = storageKey || `placeholder/${Date.now()}-${title.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
       const document = await documentService.createDocument(
         context.organizationId.toString(),
@@ -38,7 +42,7 @@ export class DocumentController {
           tags,
           retentionUntil: retentionUntil ? new Date(retentionUntil) : null,
           accessPolicy,
-          storageKey,
+          storageKey: finalStorageKey,
           checksum,
           sizeBytes,
           mimeType,
@@ -141,6 +145,31 @@ export class DocumentController {
     }
   }
 
+  async unarchive(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const { documentId } = req.params;
+      if (!documentId) {
+        throw new AppError('Document ID is required', 400, 'VALIDATION_ERROR');
+      }
+
+      const document = await documentService.unarchiveDocument(
+        context.organizationId.toString(),
+        documentId,
+        context.userId.toString(),
+        context.requestId
+      );
+
+      res.json(document);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getDocument(req: Request, res: Response, next: NextFunction) {
     try {
       const context = req.user;
@@ -151,10 +180,14 @@ export class DocumentController {
       if (!documentId) {
         throw new AppError('Document ID is required', 400, 'VALIDATION_ERROR');
       }
-
       const document = await documentService.getDocument(documentId, context.organizationId.toString());
       if (!document) {
         throw new AppError('Document not found', 404, 'NOT_FOUND');
+      }
+
+      const allowed = canUserAccessDocument(document, context.userRole, context.userId.toString());
+      if (!allowed) {
+        throw new AppError('Insufficient permissions for this document', 403, 'INSUFFICIENT_PERMISSIONS');
       }
 
       res.json(document);
@@ -176,7 +209,11 @@ export class DocumentController {
         category ? String(category) : undefined
       );
 
-      res.json(documents);
+      const filtered = documents.filter(doc =>
+        canUserAccessDocument(doc, context.userRole, context.userId.toString())
+      );
+
+      res.json(filtered);
     } catch (error) {
       next(error);
     }

@@ -121,6 +121,7 @@ router.get(
  *         description: Performance goal details
  */
 
+// POST /reviews
 router.post(
   '/reviews',
   checkPermission('performance', 'create'),
@@ -145,6 +146,44 @@ router.post(
  *         description: Performance review created
  */
 
+// Non-parameterized routes BEFORE parameterized routes
+router.get(
+  '/reviews/my',
+  checkPermission('performance', 'read'),
+  performanceController.listMyReviews.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/reviews/my:
+ *   get:
+ *     summary: List my performance reviews
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of my performance reviews
+ */
+
+router.get(
+  '/reviews',
+  checkPermission('performance', 'read'),
+  performanceController.listReviews.bind(performanceController)
+);
+/**
+ * @openapi
+ * /performance/reviews:
+ *   get:
+ *     summary: List all performance reviews
+ *     tags: [performance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all performance reviews
+ */
+
+// Parameterized routes (more specific first)
 router.patch(
   '/reviews/:reviewId/complete',
   checkPermission('performance', 'update'),
@@ -197,40 +236,5 @@ router.get(
  *     responses:
  *       200:
  *         description: Performance review details
- */
-router.get(
-  '/reviews/my',
-  checkPermission('performance', 'read'),
-  performanceController.listMyReviews.bind(performanceController)
-);
-/**
- * @openapi
- * /performance/reviews/my:
- *   get:
- *     summary: List my performance reviews
- *     tags: [performance]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of my performance reviews
- */
-
-router.get(
-  '/reviews',
-  checkPermission('performance', 'read'),
-  performanceController.listReviews.bind(performanceController)
-);
-/**
- * @openapi
- * /performance/reviews:
- *   get:
- *     summary: List all performance reviews
- *     tags: [performance]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of all performance reviews
  */
 export { router as performanceRoutes };

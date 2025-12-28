@@ -60,8 +60,6 @@ export default function EmployeeDetailPage() {
       <ProtectedPage>
         <AppShell>
           <div className="flex items-center justify-center p-12">
-      );
-      );
             <p className="text-sm text-zinc-600">Loading employee details...</p>
           </div>
         </AppShell>
@@ -296,6 +294,24 @@ export default function EmployeeDetailPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* My Documents */}
+        {employee.documents && employee.documents.length > 0 && (
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900">My Documents</h2>
+            <div className="space-y-3">
+              {employee.documents.map((doc) => (
+                <div key={doc.documentId} className="flex items-center justify-between rounded-lg border border-zinc-200 p-3">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900">{doc.type}</p>
+                    <p className="text-xs text-zinc-600">Uploaded {formatDate(doc.uploadedAt)}</p>
+                  </div>
+                  <span className="text-xs text-zinc-600">ID: {(doc.documentId as unknown as string)}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

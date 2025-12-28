@@ -92,6 +92,12 @@ router.patch(
   checkPermission('documents', 'delete'),
   documentController.archive.bind(documentController)
 );
+
+router.patch(
+  '/:documentId/unarchive',
+  checkPermission('documents', 'update'),
+  documentController.unarchive.bind(documentController)
+);
 /**
  * @openapi
  * /documents/{documentId}/archive:
@@ -111,7 +117,13 @@ router.patch(
  *         description: Document archived
  */
 
-router.get('/', checkPermission('documents', 'read'), documentController.listDocuments.bind(documentController));
+router.get(
+  '/',
+  checkPermission('documents', 'read', {
+    getUserId: (req) => req.user?.userId,
+  }),
+  documentController.listDocuments.bind(documentController)
+);
 /**
  * @openapi
  * /documents:
@@ -124,7 +136,13 @@ router.get('/', checkPermission('documents', 'read'), documentController.listDoc
  *       200:
  *         description: List of documents
  */
-router.get('/:documentId', checkPermission('documents', 'read'), documentController.getDocument.bind(documentController));
+router.get(
+  '/:documentId',
+  checkPermission('documents', 'read', {
+    getUserId: (req) => req.user?.userId,
+  }),
+  documentController.getDocument.bind(documentController)
+);
 /**
  * @openapi
  * /documents/{documentId}:

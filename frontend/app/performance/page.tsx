@@ -13,6 +13,7 @@ export default function PerformancePage() {
   const { state } = useAuth();
   const tokens = state.tokens;
   const isAuthenticated = state.status === 'authenticated';
+  const isAuthLoading = state.status === 'authenticating';
   const [goals, setGoals] = useState<PerformanceGoal[]>([]);
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +60,7 @@ export default function PerformancePage() {
     setShowReviewDialog(false);
   };
 
-  if (authLoading || loading) {
+  if (isAuthLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
