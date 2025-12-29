@@ -9,11 +9,17 @@ import type {
   EmployeeStatus,
   Gender,
   MaritalStatus,
-} from "../../lib/employees/types";
+} from "@/lib/employees/types";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { AlertCircle, Save } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 interface EmployeeFormProps {
   employee?: Employee;
-  organizationId: string; // Pass organizationId as prop
+  organizationId: string;
   onSubmit: (payload: CreateEmployeePayload | UpdateEmployeePayload) => Promise<void>;
   onCancel: () => void;
   mode: "create" | "edit";
@@ -58,8 +64,6 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
   );
   const [status, setStatus] = useState<EmployeeStatus>(employee?.professional.status || "active");
 
-  // Removed payroll information - salary should be assigned through Payroll module
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -100,7 +104,6 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           startDate,
           ...(mode === "create" && { status }),
         },
-        // Removed payroll - salary assignment is now only through Payroll module
       };
 
       await onSubmit(payload);
@@ -112,89 +115,65 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto">
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive flex items-center gap-2">
+          <AlertCircle className="h-4 w-4" />
+          {error}
         </div>
       )}
 
       {/* Employee Code (only for create) */}
       {mode === "create" && (
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900">Employee Code</h2>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Employee Code <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={employeeCode}
-              onChange={(e) => setEmployeeCode(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              placeholder="EMP001"
-            />
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Identity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-w-md">
+              <Label htmlFor="employeeCode">Employee Code <span className="text-destructive">*</span></Label>
+              <Input
+                id="employeeCode"
+                required
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value)}
+                placeholder="e.g. EMP-2023-001"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Unique identifier for the employee.</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Personal Information */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900">Personal Information</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              First Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Personal Information</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>First Name <span className="text-destructive">*</span></Label>
+            <Input required value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Last Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Last Name <span className="text-destructive">*</span></Label>
+            <Input required value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Middle Name</label>
-            <input
-              type="text"
-              value={middleName}
-              onChange={(e) => setMiddleName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Middle Name</Label>
+            <Input value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Date of Birth</label>
-            <input
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Date of Birth</Label>
+            <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Gender</label>
+          <div className="space-y-2">
+            <Label>Gender</Label>
             <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={gender}
               onChange={(e) => setGender(e.target.value as Gender | "")}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
             >
               <option value="">Select...</option>
               <option value="male">Male</option>
@@ -202,13 +181,12 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
               <option value="other">Other</option>
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Marital Status</label>
+          <div className="space-y-2">
+            <Label>Marital Status</Label>
             <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={maritalStatus}
               onChange={(e) => setMaritalStatus(e.target.value as MaritalStatus | "")}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
             >
               <option value="">Select...</option>
               <option value="single">Single</option>
@@ -217,141 +195,75 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
               <option value="widowed">Widowed</option>
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Email <span className="text-destructive">*</span></Label>
+            <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Phone</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Address */}
-        <div className="mt-6">
-          <h3 className="mb-3 text-sm font-semibold text-zinc-900">Current Address</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-zinc-700">Address Line 1</label>
-              <input
-                type="text"
-                value={addressLine1}
-                onChange={(e) => setAddressLine1(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-zinc-700">Address Line 2</label>
-              <input
-                type="text"
-                value={addressLine2}
-                onChange={(e) => setAddressLine2(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">City</label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">State/Province</label>
-              <input
-                type="text"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Country</label>
-              <input
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Postal Code</label>
-              <input
-                type="text"
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-              />
-            </div>
+      {/* Address */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Current Address</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <div className="md:col-span-2 space-y-2">
+            <Label>Address Line 1</Label>
+            <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
           </div>
-        </div>
-      </div>
+          <div className="md:col-span-2 space-y-2">
+            <Label>Address Line 2</Label>
+            <Input value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>City</Label>
+            <Input value={city} onChange={(e) => setCity(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>State/Province</Label>
+            <Input value={state} onChange={(e) => setState(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Country</Label>
+            <Input value={country} onChange={(e) => setCountry(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Postal Code</Label>
+            <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Professional Information */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900">Professional Information</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Department</label>
-            <input
-              type="text"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Professional Details</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Department</Label>
+            <Input value={department} onChange={(e) => setDepartment(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Title</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Location</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Location</Label>
+            <Input value={location} onChange={(e) => setLocation(e.target.value)} />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Employment Type <span className="text-red-500">*</span>
-            </label>
+          <div className="space-y-2">
+            <Label>Employment Type <span className="text-destructive">*</span></Label>
             <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               required
               value={employmentType}
               onChange={(e) => setEmploymentType(e.target.value as EmploymentType)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
             >
               <option value="full_time">Full Time</option>
               <option value="part_time">Part Time</option>
@@ -360,27 +272,17 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
               <option value="temporary">Temporary</option>
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Start Date <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              required
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            />
+          <div className="space-y-2">
+            <Label>Start Date <span className="text-destructive">*</span></Label>
+            <Input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
-
           {mode === "create" && (
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Status</label>
+            <div className="space-y-2">
+              <Label>Initial Status</Label>
               <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as EmployeeStatus)}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
               >
                 <option value="active">Active</option>
                 <option value="on_leave">On Leave</option>
@@ -388,34 +290,33 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
               </select>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Note about Salary Assignment */}
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-        <p className="text-sm text-blue-900">
-          <strong>💡 Note:</strong> Employee salaries are managed through the <strong>Payroll</strong> module. 
-          After creating this employee, assign their salary structure and base pay in the Payroll → Assign Salary section.
-        </p>
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+        <strong>💡 Note:</strong> Employee salaries are managed through the <strong>Payroll</strong> module.
+        After creating this employee, assign their salary structure and base pay in the Payroll → Assign Salary section.
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <button
+      <div className="flex justify-end gap-4 pt-4">
+        <Button
           type="button"
+          variant="outline"
           onClick={onCancel}
           disabled={loading}
-          className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          isLoading={loading}
         >
-          {loading ? "Saving..." : mode === "create" ? "Create Employee" : "Save Changes"}
-        </button>
+          <Save className="mr-2 h-4 w-4" />
+          {mode === "create" ? "Create Employee" : "Save Changes"}
+        </Button>
       </div>
     </form>
   );

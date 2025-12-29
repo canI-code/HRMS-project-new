@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Document } from '@/lib/documents/types';
 import { documentsApi } from '@/lib/documents/api';
 import { CreateDocumentDialog } from './CreateDocumentDialog';
@@ -19,7 +19,7 @@ function formatDistanceToNow(date: Date): string {
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
-  
+
   if (diffMins < 1) return 'just now';
   if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
@@ -191,9 +191,8 @@ export function DocumentsBrowser() {
           {filteredDocuments.map(doc => (
             <Card
               key={doc._id}
-              className={`cursor-pointer hover:shadow-lg transition-shadow ${
-                doc.status === 'archived' ? 'opacity-60' : ''
-              }`}
+              className={`cursor-pointer hover:shadow-lg transition-shadow ${doc.status === 'archived' ? 'opacity-60' : ''
+                }`}
               onClick={() => setSelectedDocument(doc)}
             >
               <CardHeader>

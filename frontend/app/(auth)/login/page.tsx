@@ -1,118 +1,139 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useAuth } from "../../../lib/auth/context";
-import { ApiError } from "../../../lib/api-client";
+import { useState } from "react"
+import { useAuth } from "@/lib/auth/context"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Label } from "@/components/ui/Label"
+import { User, Lock, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [mfaToken, setMfaToken] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { login, state } = useAuth()
+  const [error, setError] = useState<string | null>(null)
+  const isLoading = state.status === 'authenticating'
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
     try {
-      await login({ email, password, mfaToken: mfaToken || undefined });
-      setMessage("Signed in successfully.");
-      // Redirect to home page after successful login
-      setTimeout(() => router.push("/"), 500);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message || "Login failed");
-      } else {
-        setError("Login failed");
-      }
-    } finally {
-      setLoading(false);
+      await login({ email, password })
+      window.location.href = '/dashboard'; // Force hard navigation to ensure state is fresh
+    } catch (err: any) {
+      setError(err.message || "Failed to login")
     }
-  };
+  }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 bg-white px-6 py-10 text-zinc-900">
-      <header className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">Auth</p>
-        <h1 className="text-2xl font-semibold">Sign in</h1>
-        <p className="text-sm text-zinc-600">Enter your credentials to continue. Add MFA code if your account requires it.</p>
-      </header>
+    <div className="flex min-h-screen w-full overflow-hidden bg-background font-sans text-foreground">
+      {/* Left Panel - Hero Section */}
+      <div className="hidden w-1/2 flex-col justify-between bg-zinc-900 p-12 text-white lg:flex relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-primary to-purple-900 opacity-90" />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay opacity-20" />
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-800" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            placeholder="you@example.com"
-          />
+        <div className="relative z-10">
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+              <span className="font-bold">N</span>
+            </div>
+            <span className="text-2xl font-bold tracking-tight">NexusHR</span>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-800" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            placeholder="••••••••"
-          />
+        <div className="relative z-10 space-y-6 max-w-lg">
+          <h1 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+            Enterprise-Grade <br />
+            <span className="text-indigo-300">Human Resources</span>
+          </h1>
+          <p className="text-lg text-indigo-100">
+            Streamline your workforce management with our AI-powered platform.
+            Automate payroll, track attendance, and manage performance in one unified system.
+          </p>
+          <div className="space-y-4 pt-4">
+            {[
+              "Automated Payroll Processing",
+              "Smart Attendance Tracking",
+              "Performance Analytics"
+            ].map((item) => (
+              <div key={item} className="flex items-center space-x-3 text-indigo-100">
+                <CheckCircle2 className="h-5 w-5 text-indigo-400" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-800" htmlFor="mfa">
-            MFA code (optional)
-          </label>
-          <input
-            id="mfa"
-            type="text"
-            inputMode="numeric"
-            value={mfaToken}
-            onChange={(e) => setMfaToken(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none transition focus:border-zinc-400"
-            placeholder="123456"
-          />
-          <p className="text-xs text-zinc-500">Provide if your account enforces TOTP.</p>
+        <div className="relative z-10 text-sm text-indigo-200">
+          © 2024 NexusHR Enterprises. All rights reserved.
         </div>
+      </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {message && <p className="text-sm text-emerald-600">{message}</p>}
+      {/* Right Panel - Login Form */}
+      <div className="flex w-full flex-col justify-center p-8 lg:w-1/2 lg:p-12 xl:p-24 bg-surface lg:bg-background">
+        <div className="mx-auto w-full max-w-sm space-y-8 animate-fade-in">
+          <div className="space-y-2 text-center lg:text-left">
+            <h2 className="text-3xl font-display font-bold tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground">
+              Enter your credentials to access your workspace
+            </p>
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {loading ? "Signing in…" : "Sign in"}
-        </button>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11"
+                  required
+                />
+                <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <a href="#" className="text-sm font-medium text-primary hover:text-primary/80">
+                  Forgot password?
+                </a>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-11"
+                  required
+                />
+                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
 
-        <div className="flex items-center justify-between text-sm text-zinc-600">
-          <Link href="/" className="underline hover:text-zinc-800">
-            Back to home
-          </Link>
-          <Link href="/reset-password" className="underline hover:text-zinc-800">
-            Forgot password?
-          </Link>
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive font-medium animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-11 text-base group shadow-lg shadow-primary/20"
+              isLoading={isLoading}
+            >
+              Sign In
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </form>
         </div>
-      </form>
-    </main>
-  );
+      </div>
+    </div>
+  )
 }

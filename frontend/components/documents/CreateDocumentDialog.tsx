@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { CreateDocumentPayload } from '@/lib/documents/types';
 import { UserRole } from '@/lib/auth/types';
 
@@ -73,8 +73,7 @@ export function CreateDocumentDialog({
     }));
   };
 
-  const handleRoleChange = (role: string) => {
-    const checked = (event.target as HTMLInputElement).checked;
+  const handleRoleChange = (role: string, checked: boolean) => {
     if (checked && !formData.accessPolicy.allowedRoles.includes(role as UserRole)) {
       setFormData(prev => ({
         ...prev,
@@ -158,26 +157,26 @@ export function CreateDocumentDialog({
             />
           </div>
 
-            {/* File */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                File *
-              </label>
-              <Input
-                type="file"
-                accept="*/*"
-                onChange={e => {
-                  const f = e.target.files?.[0] || null;
-                  setFile(f);
-                }}
-                required
-              />
-              {file && (
-                <p className="mt-1 text-xs text-gray-600">
-                  {file.name} • {(file.size / 1024).toFixed(1)} KB
-                </p>
-              )}
-            </div>
+          {/* File */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              File *
+            </label>
+            <Input
+              type="file"
+              accept="*/*"
+              onChange={e => {
+                const f = e.target.files?.[0] || null;
+                setFile(f);
+              }}
+              required
+            />
+            {file && (
+              <p className="mt-1 text-xs text-gray-600">
+                {file.name} • {(file.size / 1024).toFixed(1)} KB
+              </p>
+            )}
+          </div>
 
           {/* Category */}
           <div>
@@ -266,7 +265,7 @@ export function CreateDocumentDialog({
                   <input
                     type="checkbox"
                     checked={formData.accessPolicy.allowedRoles.includes(value)}
-                    onChange={() => handleRoleChange(value)}
+                    onChange={(e) => handleRoleChange(value, e.target.checked)}
                     className="w-4 h-4"
                   />
                   <span className="text-sm text-gray-700">{label}</span>

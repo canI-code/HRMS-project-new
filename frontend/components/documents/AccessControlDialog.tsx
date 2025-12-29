@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
 import { Document } from '@/lib/documents/types';
 import { UserRole } from '@/lib/auth/types';
 

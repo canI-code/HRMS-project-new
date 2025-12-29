@@ -59,8 +59,8 @@ export function PayrollRunPanel() {
   };
 
   const handleSelectEmployee = (employeeId: string) => {
-    setSelectedEmployees(prev => 
-      prev.includes(employeeId) 
+    setSelectedEmployees(prev =>
+      prev.includes(employeeId)
         ? prev.filter(id => id !== employeeId)
         : [...prev, employeeId]
     );
@@ -68,7 +68,7 @@ export function PayrollRunPanel() {
 
   const handleRunPayroll = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!tokens) {
       alert("Please login to continue");
       return;
@@ -86,7 +86,7 @@ export function PayrollRunPanel() {
 
     try {
       setLoading(true);
-      
+
       // Build employees array with their salary structure
       const employeesData = selectedEmployees.map(empId => {
         const emp = employees.find(e => e.employeeId._id === empId);
@@ -95,7 +95,7 @@ export function PayrollRunPanel() {
         }
         return {
           employeeId: empId,
-          baseSalaryMinor: emp.salary.baseSalary, // baseSalary is already in paise from DB
+          baseSalary: emp.salary.baseSalary, // baseSalary is already in paise from DB
         };
       });
 
@@ -104,7 +104,7 @@ export function PayrollRunPanel() {
         periodEnd,
         employees: employeesData,
       }, tokens);
-      
+
       alert(`Payroll run created successfully!\nRun ID: ${run._id}\nEmployees: ${employeesData.length}\nStatus: ${run.status}`);
       setPeriodStart("");
       setPeriodEnd("");
@@ -267,8 +267,8 @@ export function PayrollRunPanel() {
       )}
 
       <div className="flex gap-4">
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="btn btn-primary"
           disabled={loading || loadingEmployees || selectedEmployees.length === 0}
         >
