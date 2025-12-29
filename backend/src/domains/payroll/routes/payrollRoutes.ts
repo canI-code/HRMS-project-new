@@ -271,4 +271,16 @@ router.get(
  *         description: Payslip details
  */
 
+router.get(
+  '/reports/summary',
+  checkPermission('payroll', 'read'),
+  payrollController.getPayrollSummary.bind(payrollController)
+);
+
+router.get(
+  '/reports/department',
+  checkPermission('payroll', 'read'),
+  payrollController.getDepartmentReport.bind(payrollController)
+);
+
 export { router as payrollRoutes };

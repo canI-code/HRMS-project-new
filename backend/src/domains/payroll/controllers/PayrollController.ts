@@ -279,6 +279,50 @@ export class PayrollController {
       next(error);
     }
   }
+
+  async getPayrollSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const startDate = req.query['startDate'] ? new Date(req.query['startDate'] as string) : undefined;
+      const endDate = req.query['endDate'] ? new Date(req.query['endDate'] as string) : undefined;
+
+      const summary = await payrollService.getPayrollSummary(
+        context.organizationId.toString(),
+        startDate,
+        endDate
+      );
+
+      res.json(summary);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getDepartmentReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const context = req.user;
+      if (!context) {
+        throw new AppError('Authentication required', 401, 'AUTH_REQUIRED');
+      }
+
+      const startDate = req.query['startDate'] ? new Date(req.query['startDate'] as string) : undefined;
+      const endDate = req.query['endDate'] ? new Date(req.query['endDate'] as string) : undefined;
+
+      const report = await payrollService.getDepartmentWiseReport(
+        context.organizationId.toString(),
+        startDate,
+        endDate
+      );
+
+      res.json(report);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const payrollController = new PayrollController();

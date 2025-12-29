@@ -327,6 +327,114 @@ class PayrollService {
 
     return employeesWithSalary;
   }
+
+  async getPayrollSummary(
+    organizationId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{
+    totalRuns: number;
+    totalPayslips: number;
+    totalGross: number;
+    totalDeductions: number;
+    totalNet: number;
+    averageGross: number;
+    averageNet: number;
+  }> {
+    const query: any = { organizationId: new Types.ObjectId(organizationId) };
+    
+    if (startDate || endDate) {
+      query['period.start'] = {};
+      if (startDate) query['period.start']['$gte'] = startDate;
+      if (endDate) query['period.start']['$lte'] = endDate;
+    }
+
+    const runs = await PayrollRunModel.find(query);
+    const runIds = runs.map(r => r._id);
+
+    const payslips = await PayslipModel.find({ 
+      payrollRunId: { $in: runIds },
+      organizationId: new Types.ObjectId(organizationId)
+    });
+
+    const totalGross = payslips.reduce((sum, p) => sum + (p.gross || 0), 0);
+    const totalDeductions = payslips.reduce((sum, p) => sum + (p.deductions || 0), 0);
+    const totalNet = payslips.reduce((sum, p) => sum + (p.netRounded || 0), 0);
+
+    return {
+      totalRuns: runs.length,
+      totalPayslips: payslips.length,
+      totalGross,
+      totalDeductions,
+      totalNet,
+      averageGross: payslips.length > 0 ? totalGross / payslips.length : 0,
+      averageNet: payslips.length > 0 ? totalNet / payslips.length : 0,
+    };
+  }
+
+  async getDepartmentWiseReport(
+    organizationId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<Array<{
+    department: string;
+    employeeCount: number;
+    totalGross: number;
+    totalDeductions: number;
+    totalNet: number;
+    averageGross: number;
+    averageNet: number;
+  }>> {
+    const query: any = { organizationId: new Types.ObjectId(organizationId) };
+    
+    if (startDate || endDate) {
+      query['period.start'] = {};
+      if (startDate) query['period.start']['$gte'] = startDate;
+      if (endDate) query['period.start']['$lte'] = endDate;
+    }
+
+    const runs = await PayrollRunModel.find(query);
+    const runIds = runs.map(r => r._id);
+
+    const payslips = await PayslipModel.find({ 
+      payrollRunId: { $in: runIds },
+      organizationId: new Types.ObjectId(organizationId)
+    }).populate('employeeId', 'professional.department');
+
+    const departmentMap = new Map<string, {
+      employeeCount: number;
+      totalGross: number;
+      totalDeductions: number;
+      totalNet: number;
+    }>();
+
+    payslips.forEach(p => {
+      const dept = (p.employeeId as any)?.professional?.department || 'Unassigned';
+      const existing = departmentMap.get(dept) || {
+        employeeCount: 0,
+        totalGross: 0,
+        totalDeductions: 0,
+        totalNet: 0,
+      };
+
+      existing.employeeCount += 1;
+      existing.totalGross += p.gross || 0;
+      existing.totalDeductions += p.deductions || 0;
+      existing.totalNet += p.netRounded || 0;
+
+      departmentMap.set(dept, existing);
+    });
+
+    return Array.from(departmentMap.entries()).map(([department, stats]) => ({
+      department,
+      employeeCount: stats.employeeCount,
+      totalGross: stats.totalGross,
+      totalDeductions: stats.totalDeductions,
+      totalNet: stats.totalNet,
+      averageGross: stats.employeeCount > 0 ? stats.totalGross / stats.employeeCount : 0,
+      averageNet: stats.employeeCount > 0 ? stats.totalNet / stats.employeeCount : 0,
+    }));
+  }
 }
 
 export const payrollService = new PayrollService();

@@ -59,20 +59,20 @@
 - Leave reports and analytics
 - Integration with payroll for leave deductions
 
-## Phase 8: Payroll Module (CURRENT)
+## Phase 8: Payroll Module ✅
 - [x] Salary structure builder
 - [x] Payroll run interface  
 - [x] Payslip viewer/download
 - [x] My Payslips endpoint (backend)
-- [ ] Payroll reports
-- [ ] Integration with employees for automatic structure assignment
-- [ ] Payroll approval workflow (if needed)
+- [x] Payroll reports (with summary and department-wise breakdown)
+- [x] Integration with employees for automatic structure assignment (Assign Salary page)
+- [x] Payroll approval workflow (if needed) - Skipped as optional
 
-## Phase 9: Performance Module
-- [ ] Goal creation/tracking
-- [ ] Review form
-- [ ] Feedback submission
-- [ ] Performance dashboard
+## Phase 9: Performance Module ✅
+- [x] Goal creation/tracking
+- [x] Review form
+- [x] Feedback submission
+- [x] Performance dashboard
 
 ## Phase 10: Documents Module ✅
 - [x] Document upload interface
@@ -111,23 +111,23 @@
 ---
 
 ## Current Status
-✅ **Phases 1-7, 10-12 Complete**  
-🚀 **Phase 8 (Payroll) - In Progress**  
-⏳ **Phase 9 (Performance) - Not started**
+✅ **Phases 1-12 Complete**  
+🚀 **Phase 13 (Polish & a11y) - Ready to start**  
+⏳ **Phase 14 (Testing) - Not started**
 
 ### Completed Modules
 - Foundation & Infrastructure
 - Authentication & Authorization
 - Employee Management
 - Attendance Tracking
-- Leave Management (with planned enhancements)
+- Leave Management
+- Payroll (structures, runs, payslips, reports, salary assignment)
+- Performance (goals, reviews, feedback, dashboard)
 - Notifications
 - Documents
 - Admin (roles, audit, users tab)
 
 ### Next Up
-- Payroll reports & approvals (Phase 8)
-- Performance Management (Phase 9)
 - Polish & a11y (Phase 13)
 - Testing (Phase 14)
 - Production deployment

@@ -9,6 +9,8 @@ import type {
   EmployeeSalary,
   EmployeeWithSalary,
   AssignSalaryPayload,
+  PayrollSummary,
+  DepartmentReport,
 } from "./types";
 
 export const payrollApi = {
@@ -87,6 +89,30 @@ export const payrollApi = {
 
   async getEmployeeSalary(employeeId: string, tokens: AuthTokens): Promise<EmployeeSalary> {
     return request<EmployeeSalary>(`/payroll/employees/${employeeId}/salary`, {
+      method: "GET",
+      tokens,
+    });
+  },
+
+  async getPayrollSummary(tokens: AuthTokens, params?: { startDate?: string; endDate?: string }): Promise<PayrollSummary> {
+    const query = new URLSearchParams();
+    if (params?.startDate) query.set("startDate", params.startDate);
+    if (params?.endDate) query.set("endDate", params.endDate);
+    const queryString = query.toString();
+    
+    return request<PayrollSummary>(`/payroll/reports/summary${queryString ? `?${queryString}` : ""}`, {
+      method: "GET",
+      tokens,
+    });
+  },
+
+  async getDepartmentReport(tokens: AuthTokens, params?: { startDate?: string; endDate?: string }): Promise<DepartmentReport[]> {
+    const query = new URLSearchParams();
+    if (params?.startDate) query.set("startDate", params.startDate);
+    if (params?.endDate) query.set("endDate", params.endDate);
+    const queryString = query.toString();
+    
+    return request<DepartmentReport[]>(`/payroll/reports/department${queryString ? `?${queryString}` : ""}`, {
       method: "GET",
       tokens,
     });

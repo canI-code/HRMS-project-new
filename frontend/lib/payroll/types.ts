@@ -129,3 +129,23 @@ export interface AssignSalaryPayload {
   effectiveFrom?: string;
   remarks?: string;
 }
+
+export interface PayrollSummary {
+  totalRuns: number;
+  totalPayslips: number;
+  totalGross: number;
+  totalDeductions: number;
+  totalNet: number;
+  averageGross: number;
+  averageNet: number;
+}
+
+export interface DepartmentReport {
+  department: string;
+  employeeCount: number;
+  totalGross: number;
+  totalDeductions: number;
+  totalNet: number;
+  averageGross: number;
+  averageNet: number;
+}
