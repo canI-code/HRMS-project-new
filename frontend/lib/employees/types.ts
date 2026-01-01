@@ -104,7 +104,7 @@ export interface Employee {
 
 export interface CreateEmployeePayload {
   organizationId?: string; // Optional since AuthUser doesn't have it, but backend requires it
-  employeeCode: string;
+  employeeCode?: string;
   personal: {
     firstName: string;
     lastName: string;
@@ -131,7 +131,7 @@ export interface CreateEmployeePayload {
   payroll?: PayrollInfo;
 }
 
-export interface UpdateEmployeePayload extends Partial<CreateEmployeePayload> {}
+export interface UpdateEmployeePayload extends Partial<CreateEmployeePayload> { }
 
 export interface EmployeeListQuery {
   page?: number;

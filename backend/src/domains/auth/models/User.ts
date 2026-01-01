@@ -12,6 +12,7 @@ export interface IUser extends BaseDocument {
   lastName: string;
   role: UserRole;
   employeeId?: Types.ObjectId; // Reference to Employee document
+  mustChangePassword?: boolean; // For enforcing password reset on first login
   isActive: boolean;
   isEmailVerified: boolean;
   emailVerificationToken?: string;
@@ -57,7 +58,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       index: true,
       validate: {
-        validator: function(email: string) {
+        validator: function (email: string) {
           return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         },
         message: 'Invalid email format',
@@ -130,13 +131,17 @@ const userSchema = new Schema<IUser>(
       default: [],
       select: false,
       validate: {
-        validator: function(history: string[]) {
+        validator: function (history: string[]) {
           return history.length <= 5; // Keep last 5 passwords
         },
         message: 'Password history exceeds maximum length',
       },
     },
     mfaEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    mustChangePassword: {
       type: Boolean,
       default: false,
     },
@@ -218,7 +223,7 @@ userSchema.index({ organizationId: 1, isActive: 1 });
 userSchema.index({ organizationId: 1, isDeleted: 1 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -227,7 +232,7 @@ userSchema.pre('save', async function(next) {
     // Generate salt and hash password
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(this.password, salt);
-    
+
     // Add current password to history if it's being changed
     if (this.isModified('password') && !this.isNew) {
       if (!this.passwordHistory) {
@@ -237,10 +242,10 @@ userSchema.pre('save', async function(next) {
       // Keep only last 5 passwords
       this.passwordHistory = this.passwordHistory.slice(0, 5);
     }
-    
+
     this.password = hashedPassword;
     this.lastPasswordChange = new Date();
-    
+
     next();
   } catch (error) {
     next(error as Error);

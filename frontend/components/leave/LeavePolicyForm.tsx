@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../lib/auth/context";
+import { leaveApi } from "../../lib/leave/api";
 
 interface LeaveBalance {
   leaveType: string;
@@ -20,6 +21,25 @@ export function LeavePolicyForm() {
     { leaveType: "unpaid", totalDays: 0 },
   ]);
 
+  useEffect(() => {
+    if (state.tokens) {
+      loadPolicy();
+    }
+  }, [state.tokens]);
+
+  const loadPolicy = async () => {
+    try {
+      if (!state.tokens) return;
+      const policy = await leaveApi.getPolicy(state.tokens);
+      if (policy.allocations && policy.allocations.length > 0) {
+        setLeaveBalances(policy.allocations);
+      }
+    } catch (err: any) {
+      console.error("Failed to load policy:", err);
+      // Fallback to defaults if not found is okay, or show error
+    }
+  };
+
   const handleChange = (index: number, field: keyof LeaveBalance, value: any) => {
     const updated = [...leaveBalances];
     updated[index] = { ...updated[index], [field]: value };
@@ -28,14 +48,13 @@ export function LeavePolicyForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!state.tokens) return;
     setLoading(true);
     setError("");
     setSuccess(false);
 
     try {
-      // This would call a policy API endpoint
-      // For now, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await leaveApi.updatePolicy({ allocations: leaveBalances }, state.tokens);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {

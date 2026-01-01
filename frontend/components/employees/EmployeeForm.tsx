@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type {
   CreateEmployeePayload,
   UpdateEmployeePayload,
@@ -15,7 +15,30 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { AlertCircle, Save } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
+import { employeeApi } from "@/lib/employees/api";
+import { useAuth } from "@/lib/auth/context";
+
+// Predefined lists for dropdowns (Simulating data that might come from settings in the future)
+const DEPARTMENTS = ["Engineering", "Human Resources", "Sales", "Marketing", "Finance", "Operations", "Legal", "IT Support", "Design"];
+const TITLES = [
+  "Software Engineer", "Senior Software Engineer", "Tech Lead", "Engineering Manager",
+  "HR Specialist", "HR Manager",
+  "Sales Representative", "Sales Director",
+  "Marketing Manager", "Content Specialist",
+  "Accountant", "Finance Manager",
+  "Operations Manager",
+  "Legal Counsel",
+  "Product Manager", "Project Manager"
+];
+const LOCATIONS = ["New York", "San Francisco", "London", "Bangalore", "Sydney", "Singapore", "Berlin", "Remote"];
+const COUNTRY_CODES = [
+  { code: "+1", country: "US/CA" },
+  { code: "+44", country: "UK" },
+  { code: "+91", country: "IN" },
+  { code: "+61", country: "AU" },
+  { code: "+65", country: "SG" },
+  { code: "+49", country: "DE" },
+];
 
 interface EmployeeFormProps {
   employee?: Employee;
@@ -26,8 +49,34 @@ interface EmployeeFormProps {
 }
 
 export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mode }: EmployeeFormProps) {
+  const { state: authState } = useAuth();
+  const tokens = authState.tokens;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Dynamic form options (fetched from API)
+  const [formOptions, setFormOptions] = useState<{
+    departments: { value: string; label: string }[];
+    titles: { value: string; label: string }[];
+    locations: { value: string; label: string }[];
+  }>({ departments: [], titles: [], locations: [] });
+
+  // Fetch form options on mount
+  useEffect(() => {
+    if (!tokens) return;
+    employeeApi.getFormOptions(tokens)
+      .then(opts => setFormOptions(opts))
+      .catch(e => {
+        console.warn('Failed to load form options, using defaults:', e);
+        // Fallback to static lists
+        setFormOptions({
+          departments: DEPARTMENTS.map(d => ({ value: d.toLowerCase().replace(/\s+/g, '_'), label: d })),
+          titles: TITLES.map(t => ({ value: t.toLowerCase().replace(/\s+/g, '_'), label: t })),
+          locations: LOCATIONS.map(l => ({ value: l.toLowerCase().replace(/\s+/g, '_'), label: l })),
+        });
+      });
+  }, [tokens]);
 
   // Personal information
   const [employeeCode, setEmployeeCode] = useState(employee?.employeeCode || "");
@@ -42,7 +91,23 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
     employee?.personal.maritalStatus || ""
   );
   const [email, setEmail] = useState(employee?.personal.contact.email || "");
-  const [phone, setPhone] = useState(employee?.personal.contact.phone || "");
+
+  // Phone handling
+  const [phoneCode, setPhoneCode] = useState("+91"); // Default
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  useEffect(() => {
+    if (employee?.personal.contact.phone) {
+      // Try to parse existing phone
+      const match = COUNTRY_CODES.find(c => employee.personal.contact.phone?.startsWith(c.code));
+      if (match) {
+        setPhoneCode(match.code);
+        setPhoneNumber(employee.personal.contact.phone.replace(match.code, "").trim());
+      } else {
+        setPhoneNumber(employee.personal.contact.phone || "");
+      }
+    }
+  }, [employee]);
 
   // Address
   const [addressLine1, setAddressLine1] = useState(employee?.personal.addresses?.current?.line1 || "");
@@ -51,6 +116,33 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
   const [state, setState] = useState(employee?.personal.addresses?.current?.state || "");
   const [country, setCountry] = useState(employee?.personal.addresses?.current?.country || "");
   const [postalCode, setPostalCode] = useState(employee?.personal.addresses?.current?.postalCode || "");
+
+  // Auto-fill City/State based on Zip
+  useEffect(() => {
+    if (postalCode && postalCode.length >= 5 && country) {
+      const countryMap: Record<string, string> = { "United States": "us", "India": "in", "Germany": "de" };
+      const code = countryMap[country] || "us";
+
+      const fetchZip = async () => {
+        try {
+          const res = await fetch(`https://api.zippopotam.us/${code}/${postalCode}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.places && data.places.length > 0) {
+              setCity(data.places[0]["place name"]);
+              setState(data.places[0]["state"]);
+            }
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      };
+
+      const timeout = setTimeout(fetchZip, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [postalCode, country]);
+
 
   // Professional information
   const [department, setDepartment] = useState(employee?.professional.department || "");
@@ -70,6 +162,20 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
     setError(null);
 
     try {
+      if (dateOfBirth) {
+        const dob = new Date(dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+        if (age < 18) throw new Error("Employee must be at least 18 years old");
+        if (age > 65) throw new Error("Employee must be at most 65 years old");
+      }
+
+      const fullPhone = phoneNumber ? `${phoneCode} ${phoneNumber}` : undefined;
+
       const payload: CreateEmployeePayload | UpdateEmployeePayload = {
         ...(mode === "create" && { organizationId, employeeCode }),
         personal: {
@@ -81,7 +187,7 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           ...(maritalStatus && { maritalStatus }),
           contact: {
             email,
-            ...(phone && { phone }),
+            ...(fullPhone && { phone: fullPhone }),
           },
           ...(addressLine1 && city && country && {
             addresses: {
@@ -131,16 +237,16 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           </CardHeader>
           <CardContent>
             <div className="max-w-md">
-              <Label htmlFor="employeeCode">Employee Code <span className="text-destructive">*</span></Label>
+              <Label htmlFor="employeeCode">Employee Code</Label>
               <Input
                 id="employeeCode"
-                required
                 value={employeeCode}
                 onChange={(e) => setEmployeeCode(e.target.value)}
-                placeholder="e.g. EMP-2023-001"
-                className="mt-1.5"
+                placeholder="Auto-generated (e.g. EMP-2406001)"
+                className="mt-1.5 bg-muted"
+                disabled
               />
-              <p className="text-xs text-muted-foreground mt-1">Unique identifier for the employee.</p>
+              <p className="text-xs text-muted-foreground mt-1">Unique identifier. Will be automatically assigned upon creation.</p>
             </div>
           </CardContent>
         </Card>
@@ -201,7 +307,24 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           </div>
           <div className="space-y-2">
             <Label>Phone</Label>
-            <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <div className="flex gap-2">
+              <select
+                className="w-[80px] flex h-10 rounded-md border border-input bg-background px-2 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={phoneCode}
+                onChange={(e) => setPhoneCode(e.target.value)}
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.code}</option>
+                ))}
+              </select>
+              <Input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="1234567890"
+                className="flex-1"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -212,6 +335,14 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
           <CardTitle className="text-base">Current Address</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Country</Label>
+            <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. United States" />
+          </div>
+          <div className="space-y-2">
+            <Label>Postal Code</Label>
+            <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Type zip to auto-fill" />
+          </div>
           <div className="md:col-span-2 space-y-2">
             <Label>Address Line 1</Label>
             <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
@@ -228,14 +359,6 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
             <Label>State/Province</Label>
             <Input value={state} onChange={(e) => setState(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label>Country</Label>
-            <Input value={country} onChange={(e) => setCountry(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Postal Code</Label>
-            <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-          </div>
         </CardContent>
       </Card>
 
@@ -247,15 +370,36 @@ export function EmployeeForm({ employee, organizationId, onSubmit, onCancel, mod
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Department</Label>
-            <Input value={department} onChange={(e) => setDepartment(e.target.value)} />
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            >
+              <option value="">Select Department</option>
+              {((formOptions?.departments?.length ?? 0) > 0 ? formOptions.departments : DEPARTMENTS.map(d => ({ value: d, label: d }))).map(d => <option key={d.value} value={d.label}>{d.label}</option>)}
+            </select>
           </div>
           <div className="space-y-2">
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label>Title / Designation</Label>
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            >
+              <option value="">Select Title</option>
+              {((formOptions?.titles?.length ?? 0) > 0 ? formOptions.titles : TITLES.map(t => ({ value: t, label: t }))).map(t => <option key={t.value} value={t.label}>{t.label}</option>)}
+            </select>
           </div>
           <div className="space-y-2">
             <Label>Location</Label>
-            <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            >
+              <option value="">Select Location</option>
+              {((formOptions?.locations?.length ?? 0) > 0 ? formOptions.locations : LOCATIONS.map(l => ({ value: l, label: l }))).map(l => <option key={l.value} value={l.label}>{l.label}</option>)}
+            </select>
           </div>
           <div className="space-y-2">
             <Label>Employment Type <span className="text-destructive">*</span></Label>

@@ -12,7 +12,7 @@ export default function CheckOutPage() {
   const tokens = state.tokens!;
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeId, setEmployeeId] = useState<string>("");
-  const [breakMinutes, setBreakMinutes] = useState<number>(0);
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AttendanceRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,13 +51,13 @@ export default function CheckOutPage() {
     setError(null);
     setResult(null);
     try {
-      const r = await attendanceApi.checkOut(employeeId, tokens, { breakMinutes });
+      const r = await attendanceApi.checkOut(employeeId, tokens, {});
       setResult(r);
     } catch (err) {
       try {
         const next = await refreshTokens();
         if (next) {
-          const r = await attendanceApi.checkOut(employeeId, next, { breakMinutes });
+          const r = await attendanceApi.checkOut(employeeId, next, {});
           setResult(r);
         } else {
           throw err;
@@ -89,16 +89,6 @@ export default function CheckOutPage() {
               </option>
             ))}
           </select>
-        </label>
-        <label className="block">
-          <span className="text-sm">Break Minutes</span>
-          <input
-            type="number"
-            min={0}
-            className="mt-1 w-full border rounded p-2"
-            value={breakMinutes}
-            onChange={(e) => setBreakMinutes(parseInt(e.target.value || "0", 10))}
-          />
         </label>
         <button type="submit" disabled={!canSubmit} className="btn btn-secondary">
           {loading ? "Checking out..." : "Check Out"}

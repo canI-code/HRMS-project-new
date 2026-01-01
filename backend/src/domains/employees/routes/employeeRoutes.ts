@@ -39,6 +39,31 @@ router.get('/', checkPermission('employees', 'read'), EmployeeController.list);
  *       200:
  *         description: Employee list
  */
+// Form options (departments, titles, locations) - accessible to all authenticated users
+router.get('/form-options', async (req, res, next) => {
+    try {
+        const { ConfigItemService } = await import('@/domains/admin/services/ConfigItemService');
+        const ctx = req.user!;
+
+        const [departments, titles, locations] = await Promise.all([
+            ConfigItemService.list(ctx, 'department'),
+            ConfigItemService.list(ctx, 'title'),
+            ConfigItemService.list(ctx, 'location'),
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                departments: departments.map(d => ({ value: d.value, label: d.label })),
+                titles: titles.map(t => ({ value: t.value, label: t.label })),
+                locations: locations.map(l => ({ value: l.value, label: l.label })),
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Current user's employee profile (no RBAC - restricted to own record)
 // Place this before parameterized routes to avoid matching "/me" as ":id"
 router.get('/me', EmployeeController.getMe);

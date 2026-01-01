@@ -82,27 +82,50 @@ export class LeaveController {
       const status = req.query['status'] as string | undefined;
       const showAll = req.query['showAll'] === 'true';
 
-      const selfEmpId = await getCurrentEmployeeId(ctx);
+      console.log(`DEBUG: LeaveController.list - User: ${ctx.userId}, Role: ${ctx.userRole}, ShowAll: ${showAll}, Status: ${status}`);
+
+      let selfEmpId: Types.ObjectId | null = null;
+      try {
+        selfEmpId = await getCurrentEmployeeId(ctx);
+      } catch (e) {
+        // If user is admin/super_admin, they might not have an employee record. 
+        // We should allow them to list leaves if they are permitted.
+        if (ctx.userRole === 'employee') {
+          throw e; // Employees MUST have a record to see their leaves
+        }
+        console.log('DEBUG: No employee record for admin user, proceeding.');
+      }
 
       // For "My Leaves" view, always filter to current user's leaves
       if (!showAll || ctx.userRole === 'employee') {
-        employeeIdStr = selfEmpId.toString();
+        if (!selfEmpId && ctx.userRole !== 'employee') {
+          // Admin asking for "My Leaves" but has no employee record -> return empty
+          return res.json({ success: true, data: [] });
+        }
+        if (selfEmpId) {
+          employeeIdStr = selfEmpId.toString();
+        }
       }
 
       const opts: { employeeId?: string; status?: any; excludeEmployeeId?: string } = {};
       if (employeeIdStr) opts.employeeId = employeeIdStr;
       if (status) opts.status = status as any;
-      
+
       // For Team Leaves (showAll=true), exclude current user's leaves
-      if (showAll && ctx.userRole !== 'employee') {
+      if (showAll && ctx.userRole !== 'employee' && selfEmpId) {
         opts.excludeEmployeeId = selfEmpId.toString();
       }
+
+      console.log('DEBUG: Listing leaves with opts:', opts);
 
       const leaves = await LeaveService.listLeaves(ctx, {
         employeeId: opts.employeeId ? new Types.ObjectId(opts.employeeId) : undefined,
         status: opts.status,
         excludeEmployeeId: opts.excludeEmployeeId ? new Types.ObjectId(opts.excludeEmployeeId) : undefined,
       } as any);
+
+      console.log(`DEBUG: Found ${leaves.length} leaves`);
+
       res.json({ success: true, data: leaves.map(serializeLeave) });
     } catch (error) { next(error); }
   }
@@ -157,4 +180,23 @@ export class LeaveController {
       res.json({ success: true, data: serializeLeave(updated) });
     } catch (error) { next(error); }
   }
+
+  static async getBalances(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ctx = req.user!;
+      // For balance, we need employeeId.
+      // If user is employee, use their employeeId.
+      // If manager/admin looking at someone else, use query param?
+      // For now, let's implement for "My Balance" primarily.
+      let employeeId = await getCurrentEmployeeId(ctx);
+
+      if (req.query['employeeId'] && ctx.userRole !== 'employee') {
+        employeeId = new Types.ObjectId(req.query['employeeId'] as string);
+      }
+
+      const balances = await LeaveService.getBalances(ctx, employeeId);
+      res.json({ success: true, data: balances });
+    } catch (error) { next(error); }
+  }
 }
+

@@ -23,6 +23,7 @@ export const leaveApi = {
     if (query.status) params.append("status", query.status);
     if (query.employeeId) params.append("employeeId", query.employeeId);
     if (query.leaveType) params.append("leaveType", query.leaveType);
+    if (query.showAll) params.append("showAll", "true");
 
     const queryString = params.toString();
     const path = `/leaves${queryString ? `?${queryString}` : ""}`;
@@ -63,4 +64,28 @@ export const leaveApi = {
       body: payload,
     });
   },
+
+  // Policy Management
+  async getPolicy(tokens: AuthTokens): Promise<{ allocations: { leaveType: string; totalDays: number }[] }> {
+    return request("/leaves/policy", {
+      method: "GET",
+      tokens,
+    });
+  },
+
+  async updatePolicy(payload: { allocations: { leaveType: string; totalDays: number }[] }, tokens: AuthTokens): Promise<any> {
+    return request("/leaves/policy", {
+      method: "POST",
+      tokens,
+      body: payload,
+    });
+  },
+
+  async getBalances(tokens: AuthTokens): Promise<{ leaveType: string; total: number; used: number; available: number }[]> {
+    return request("/leaves/balance", {
+      method: "GET",
+      tokens,
+    });
+  },
 };
+

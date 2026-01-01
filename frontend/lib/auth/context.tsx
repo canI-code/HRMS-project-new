@@ -32,7 +32,7 @@ const toTokens = (payload: { accessToken: string; refreshToken: string }): AuthT
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({ status: "unauthenticated", roles: [] });
+  const [state, setState] = useState<AuthState>({ status: "loading", roles: [] });
   const tokensRef = useRef<AuthTokens | undefined>(undefined);
 
   useEffect(() => {
@@ -40,6 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (persisted?.tokens) {
       tokensRef.current = persisted.tokens;
       setState({ status: "authenticated", tokens: persisted.tokens, roles: persisted.roles || [], user: persisted.user });
+    } else {
+      setState(prev => ({ ...prev, status: "unauthenticated" }));
     }
   }, []);
 
@@ -79,8 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState(next);
       persist(next);
       return tokens;
-    } catch {
+    } catch (error) {
+      console.error("Refresh failed, logging out", error);
       logout();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login?expired=true";
+      }
       return undefined;
     }
   }, [logout, persist, state.roles, state.user]);
@@ -105,31 +111,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (payload: LoginPayload) => {
       setState((prev) => ({ ...prev, status: "authenticating" }));
-      const response = await request<LoginResponse>("/auth/login", {
-        method: "POST",
-        body: payload,
-        skipAuth: true,
-      });
+      try {
+        const response = await request<LoginResponse>("/auth/login", {
+          method: "POST",
+          body: payload,
+          skipAuth: true,
+        });
 
-      // Handle MFA required case
-      if (response.mfaRequired) {
-        throw new Error("MFA token required");
+        // Handle MFA required case
+        if (response.mfaRequired) {
+          throw new Error("MFA token required");
+        }
+
+        const tokens = toTokens({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+        });
+
+        const next: AuthState = {
+          status: "authenticated",
+          user: {
+            id: response.user.id,
+            email: response.user.email,
+            organizationId: response.user.organizationId,
+            mustChangePassword: response.user.mustChangePassword
+          },
+          roles: [response.user.role],
+          tokens,
+        };
+
+        setState(next);
+        persist(next);
+        return response;
+      } catch (error) {
+        setState((prev) => ({ ...prev, status: "unauthenticated" }));
+        throw error;
       }
-
-      const tokens = toTokens({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      });
-
-      const next: AuthState = {
-        status: "authenticated",
-        user: { id: response.user.id, email: response.user.email, organizationId: response.user.organizationId },
-        roles: [response.user.role],
-        tokens,
-      };
-
-      setState(next);
-      persist(next);
     },
     [persist]
   );

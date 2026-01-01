@@ -8,12 +8,13 @@ import type { RolePermissions, AuditLogEntry, AuditStats, AdminUser } from "@/li
 import { RolePermissionsPanel } from "@/components/admin/RolePermissionsPanel";
 import { AuditLogTable } from "@/components/admin/AuditLogTable";
 import { UsersTable } from "@/components/admin/UsersTable";
+import { ConfigItemsManager } from "@/components/admin/ConfigItemsManager";
 import { env } from "@/lib/env";
 
 export default function AdminPage() {
   const { state, refreshTokens, hasRole } = useAuth();
   const tokens = state.tokens;
-  const [activeTab, setActiveTab] = useState<"organization" | "roles" | "audit" | "users">("organization");
+  const [activeTab, setActiveTab] = useState<"organization" | "roles" | "audit" | "users" | "formOptions">("organization");
   const [roles, setRoles] = useState<RolePermissions[]>([]);
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [stats, setStats] = useState<AuditStats | null>(null);
@@ -124,6 +125,16 @@ export default function AdminPage() {
                 Users
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("formOptions")}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${activeTab === "formOptions"
+                ? "bg-black text-white"
+                : "border border-zinc-200 text-zinc-800 hover:bg-zinc-100"
+                }`}
+            >
+              Form Options
+            </button>
           </div>
         </div>
 
@@ -195,6 +206,8 @@ export default function AdminPage() {
         {activeTab === "users" && tokens && (
           <UsersTable users={users} tokens={tokens} loading={loading} isSuperAdmin={isSuperAdmin} onRefresh={loadData} />
         )}
+
+        {activeTab === "formOptions" && <ConfigItemsManager />}
 
       </div>
     </Protected>

@@ -84,6 +84,21 @@ export const employeeApi = {
     });
   },
 
+  async getFormOptions(tokens: AuthTokens): Promise<{
+    departments: { value: string; label: string }[];
+    titles: { value: string; label: string }[];
+    locations: { value: string; label: string }[];
+  }> {
+    return request<{
+      departments: { value: string; label: string }[];
+      titles: { value: string; label: string }[];
+      locations: { value: string; label: string }[];
+    }>("/employees/form-options", {
+      method: "GET",
+      tokens,
+    });
+  },
+
   /**
    * Set employee manager
    */

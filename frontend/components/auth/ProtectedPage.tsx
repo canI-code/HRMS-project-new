@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "../../lib/auth/context";
 
 /**
@@ -16,14 +17,19 @@ export function ProtectedPage({ children }: { children: React.ReactNode }) {
     // Redirect to login if not authenticated
     if (state.status === "unauthenticated") {
       router.push("/login");
+    } else if (state.status === "authenticated" && state.user?.mustChangePassword) {
+      router.push("/change-password");
     }
-  }, [state.status, router]);
+  }, [state.status, router, state.user]);
 
   // Show nothing while checking auth status or redirecting
   if (state.status !== "authenticated") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-sm text-zinc-600">Checking authentication...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-zinc-600">Loading your workspace...</p>
+        </div>
       </div>
     );
   }

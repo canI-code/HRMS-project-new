@@ -24,17 +24,25 @@ const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Employees", href: "/employees", icon: Users },
     { name: "Attendance", href: "/attendance", icon: Calendar },
-    { name: "Leaves", href: "/leaves", icon: Briefcase },
+    { name: "Leave", href: "/leave", icon: Briefcase },
     { name: "Payroll", href: "/payroll", icon: FileText },
-    { name: "Performance", href: "/performance", icon: Settings }, // Using Settings temporary
+    { name: "Performance", href: "/performance", icon: Settings },
     { name: "Documents", href: "/documents", icon: FileText },
+    { name: "Notifications", href: "/notifications", icon: Bell },
+    { name: "Admin", href: "/admin", icon: Settings },
 ]
 
 export function Sidebar() {
     const pathname = usePathname()
     const [collapsed, setCollapsed] = useState(false)
-    const { state, logout } = useAuth()
+    const { state, logout, hasRole } = useAuth()
     const user = state.user
+
+    const filteredNavigation = navigation.filter(item => {
+        if (item.name === "Admin" && !hasRole(["super_admin", "hr_admin"])) return false;
+        if (item.name === "Employees" && !hasRole(["super_admin", "hr_admin", "manager"])) return false;
+        return true;
+    })
 
     return (
         <div className={cn(
@@ -59,7 +67,7 @@ export function Sidebar() {
 
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-2">
-                    {navigation.map((item) => {
+                    {filteredNavigation.map((item) => {
                         const isActive = pathname.startsWith(item.href)
                         return (
                             <Link

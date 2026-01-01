@@ -54,28 +54,40 @@ export function TeamLeavesList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => setStatusFilter("all")}
-          className={`btn btn-sm ${statusFilter === "all" ? "btn-primary" : "btn-outline"}`}
+          className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${statusFilter === "all"
+            ? "bg-zinc-900 text-white border-zinc-900"
+            : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+            }`}
         >
           All
         </button>
         <button
           onClick={() => setStatusFilter("pending")}
-          className={`btn btn-sm ${statusFilter === "pending" ? "btn-warning" : "btn-outline"}`}
+          className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${statusFilter === "pending"
+            ? "bg-amber-500 text-white border-amber-500"
+            : "bg-white text-zinc-700 border-zinc-200 hover:bg-amber-50"
+            }`}
         >
           Pending
         </button>
         <button
           onClick={() => setStatusFilter("approved")}
-          className={`btn btn-sm ${statusFilter === "approved" ? "btn-success" : "btn-outline"}`}
+          className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${statusFilter === "approved"
+            ? "bg-emerald-500 text-white border-emerald-500"
+            : "bg-white text-zinc-700 border-zinc-200 hover:bg-emerald-50"
+            }`}
         >
           Approved
         </button>
         <button
           onClick={() => setStatusFilter("rejected")}
-          className={`btn btn-sm ${statusFilter === "rejected" ? "btn-error" : "btn-outline"}`}
+          className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${statusFilter === "rejected"
+            ? "bg-red-500 text-white border-red-500"
+            : "bg-white text-zinc-700 border-zinc-200 hover:bg-red-50"
+            }`}
         >
           Rejected
         </button>
@@ -109,7 +121,7 @@ export function TeamLeavesList() {
                       <div className="font-semibold">
                         {leave.employeeId.firstName} {leave.employeeId.lastName}
                       </div>
-                      <div className="text-sm text-gray-600">{leave.employeeId.email}</div>
+                      <div className="text-sm text-gray-600">{leave.employeeId.professional?.title || '-'}</div>
                     </div>
                   </td>
                   <td className="capitalize">{leave.leaveType}</td>
@@ -117,15 +129,14 @@ export function TeamLeavesList() {
                   <td>{new Date(leave.endDate).toLocaleDateString()}</td>
                   <td>
                     <span
-                      className={`badge ${
-                        leave.status === "approved"
-                          ? "badge-success"
-                          : leave.status === "rejected"
+                      className={`badge ${leave.status === "approved"
+                        ? "badge-success"
+                        : leave.status === "rejected"
                           ? "badge-error"
                           : leave.status === "pending"
-                          ? "badge-warning"
-                          : "badge-ghost"
-                      }`}
+                            ? "badge-warning"
+                            : "badge-ghost"
+                        }`}
                     >
                       {leave.status}
                     </span>

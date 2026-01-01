@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../lib/auth/context";
 import { leaveApi } from "../../lib/leave/api";
 
@@ -9,6 +9,24 @@ export function LeaveRequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [balances, setBalances] = useState<{ leaveType: string; available: number }[]>([]);
+
+  useEffect(() => {
+    if (state.tokens) {
+      loadBalances();
+    }
+  }, [state.tokens]);
+
+  const loadBalances = async () => {
+    try {
+      if (!state.tokens) return;
+      const data = await leaveApi.getBalances(state.tokens);
+      setBalances(data);
+    } catch (e) {
+      console.error("Failed to load balances", e);
+    }
+  };
+
   const [formData, setFormData] = useState({
     leaveType: "casual",
     startDate: "",
@@ -20,6 +38,10 @@ export function LeaveRequestForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const selectedBalance = balances.find(b => b.leaveType === formData.leaveType);
+  const availableDays = selectedBalance ? selectedBalance.available : 0;
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +72,7 @@ export function LeaveRequestForm() {
         endDate: "",
         reason: "",
       });
+      loadBalances(); // Refresh balance
       setTimeout(() => setSuccess(false), 5000);
     } catch (err: any) {
       setError(err.message || "Failed to request leave");
@@ -66,6 +89,7 @@ export function LeaveRequestForm() {
       <div className="form-control">
         <label className="label">
           <span className="label-text">Leave Type</span>
+          <span className="label-text-alt text-blue-600 font-semibold">Available: {availableDays} days</span>
         </label>
         <select
           name="leaveType"
@@ -125,10 +149,10 @@ export function LeaveRequestForm() {
 
       <button
         type="submit"
-        disabled={loading}
-        className="btn btn-primary w-full"
+        disabled={loading || availableDays <= 0}
+        className="btn btn-primary w-full disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        {loading ? "Submitting..." : "Request Leave"}
+        {loading ? "Submitting..." : availableDays <= 0 ? "Insufficient Balance" : "Request Leave"}
       </button>
     </form>
   );

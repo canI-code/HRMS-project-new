@@ -36,7 +36,15 @@ app.use(cors({
 const limiter = rateLimit({
   windowMs: config.rateLimitWindowMs,
   max: config.rateLimitMaxRequests,
-  message: 'Too many requests from this IP, please try again later.',
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: {
+        message: 'Too many requests from this IP, please try again later.',
+        details: { retryAfter: res.getHeader('Retry-After') }
+      }
+    });
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -183,7 +191,7 @@ const startServer = async (): Promise<void> => {
   try {
     // Connect to database
     await connectDatabase();
-    
+
     // Start server
     const server = app.listen(config.port, () => {
       logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
@@ -191,6 +199,14 @@ const startServer = async (): Promise<void> => {
 
     // Initialize background job processors (optional)
     initJobs();
+
+    // Seed default notification templates for all organizations
+    try {
+      const { seedAllOrganizationTemplates } = await import('@/domains/notifications/services/seedTemplates');
+      await seedAllOrganizationTemplates();
+    } catch (seedError) {
+      logger.warn('Failed to seed notification templates:', seedError);
+    }
 
     // Graceful shutdown
     process.on('SIGTERM', () => {

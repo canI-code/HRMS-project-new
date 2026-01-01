@@ -9,6 +9,12 @@ export interface LeaveRecord {
     firstName: string;
     lastName: string;
     email: string;
+    employeeCode?: string;
+    title?: string;
+    designation?: string;
+    professional?: {
+      title?: string;
+    };
   };
   leaveType: LeaveType;
   startDate: string;
@@ -43,4 +49,5 @@ export interface LeaveListQuery {
   status?: LeaveStatus;
   employeeId?: string;
   leaveType?: LeaveType;
+  showAll?: boolean;
 }

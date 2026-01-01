@@ -1,11 +1,36 @@
 import { Router } from 'express';
 import { LeaveController } from '@/domains/leave/controllers/LeaveController';
+import { LeavePolicyController } from '@/domains/leave/controllers/LeavePolicyController';
 import { authenticate } from '@/shared/middleware/auth';
 import { checkPermission } from '@/shared/middleware/rbac';
 
 const router = Router();
 
 router.use(authenticate);
+
+// Policy Management
+router.get(
+	'/policy',
+	checkPermission('leaves', 'read'),
+	LeavePolicyController.get
+);
+
+router.post(
+	'/policy',
+	// Usually only HR admin/Super admin. 'leaves:update' might be too broad if it allows managers.
+	// We rely on Controller check for roles hr_admin/super_admin or RBAC config.
+	// Assuming RBAC 'update' is enough, but controller has extra check.
+	checkPermission('leaves', 'update'),
+	LeavePolicyController.update
+);
+
+router.get(
+	'/balance',
+	checkPermission('leaves', 'read', {
+		getUserId: (req) => req.user?.userId,
+	}),
+	LeaveController.getBalances
+);
 
 // Request a leave
 router.post(
@@ -53,7 +78,10 @@ router.get(
  *     responses:
  *       200:
  *         description: List of leave requests
+ *       403:
+ *         description: Insufficient permissions
  */
+
 router.get(
 	'/:id',
 	checkPermission('leaves', 'read', {
@@ -78,6 +106,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Leave request details
+ *       404:
+ *         description: Leave request not found
  */
 
 // Workflow actions

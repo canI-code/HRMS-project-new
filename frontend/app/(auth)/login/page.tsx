@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth/context"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
@@ -8,18 +9,30 @@ import { Label } from "@/components/ui/Label"
 import { User, Lock, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { login, state } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const isLoading = state.status === 'authenticating'
 
+  useEffect(() => {
+    if (searchParams.get("expired")) {
+      setError("Session expired. Please log in again.")
+    }
+  }, [searchParams])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     try {
-      await login({ email, password })
-      window.location.href = '/dashboard'; // Force hard navigation to ensure state is fresh
+      const response = await login({ email, password })
+      if (response.user.mustChangePassword) {
+        router.push('/change-password')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err: any) {
       setError(err.message || "Failed to login")
     }
@@ -98,7 +111,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <a href="#" className="text-sm font-medium text-primary hover:text-primary/80">
+                <a href="/reset-password" className="text-sm font-medium text-primary hover:text-primary/80">
                   Forgot password?
                 </a>
               </div>

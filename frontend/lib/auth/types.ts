@@ -11,9 +11,10 @@ export interface AuthUser {
   email: string;
   name?: string;
   organizationId: string; // Add organizationId
+  mustChangePassword?: boolean;
 }
 
-export type AuthStatus = "unauthenticated" | "authenticating" | "authenticated";
+export type AuthStatus = "unauthenticated" | "authenticating" | "authenticated" | "loading";
 
 export interface AuthState {
   status: AuthStatus;
@@ -36,12 +37,14 @@ export interface LoginResponse {
     email: string;
     role: UserRole;
     organizationId: string;
+    mustChangePassword?: boolean;
   };
   mfaRequired?: boolean;
 }
 
 export interface RefreshResponse {
   accessToken: string;
+
   refreshToken?: string;
   user?: {
     id: string;
@@ -53,7 +56,7 @@ export interface RefreshResponse {
 
 export interface AuthContextValue {
   state: AuthState;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<LoginResponse>;
   logout: () => void;
   refreshTokens: () => Promise<AuthTokens | undefined>;
   setRoles: (roles: UserRole[]) => void;

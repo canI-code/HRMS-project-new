@@ -6,7 +6,7 @@ import { AppError } from '@/shared/utils/AppError';
 
 export interface CreateEmployeeInput {
   organizationId: Types.ObjectId;
-  employeeCode: string;
+  employeeCode?: string; // Optional, auto-generated if missing
   personal: {
     firstName: string;
     lastName: string;
@@ -47,15 +47,33 @@ export interface UpdateEmployeeInput {
 }
 
 export class EmployeeService {
+  private static generateEmployeeCode(): string {
+    const now = new Date();
+    const yy = now.getFullYear().toString().slice(-2);
+    const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+    // Using random 4 digits to avoid race conditions without a counter collection
+    // Format: EMP-YYMMXXXX
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `EMP-${yy}${mm}${random}`;
+  }
+
   static async createEmployee(ctx: RequestContext, input: CreateEmployeeInput) {
-    const exists = await EmployeeModel.findOne({ organizationId: input.organizationId, employeeCode: input.employeeCode });
+    let employeeCode = input.employeeCode;
+
+    if (!employeeCode) {
+      // Auto-generate code
+      employeeCode = EmployeeService.generateEmployeeCode();
+      // Check uniqueness loop could be added here if critical
+    }
+
+    const exists = await EmployeeModel.findOne({ organizationId: input.organizationId, employeeCode });
     if (exists) {
-      throw new AppError('Employee code must be unique within organization', 400, 'EMPLOYEE_CODE_EXISTS');
+      throw new AppError('Employee code already exists', 400, 'EMPLOYEE_CODE_EXISTS');
     }
 
     const employee = await EmployeeModel.create({
       organizationId: input.organizationId,
-      employeeCode: input.employeeCode,
+      employeeCode,
       personal: input.personal,
       professional: {
         ...input.professional,

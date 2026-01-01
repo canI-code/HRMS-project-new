@@ -58,7 +58,7 @@ const requiredEnvVars = [
 // Validate required environment variables
 const validateEnvironment = (): void => {
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
+
   if (missing.length > 0) {
     logger.error(`Missing required environment variables: ${missing.join(', ')}`);
     process.exit(1);
@@ -99,7 +99,7 @@ export const config: Config = {
   bcryptRounds: parseInt(process.env['BCRYPT_ROUNDS'] || '12', 10),
   mfaIssuer: process.env['MFA_ISSUER'] || 'Enterprise HRMS',
   rateLimitWindowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutes
-  rateLimitMaxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100', 10),
+  rateLimitMaxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '50000', 10), // Very high for dev
 
   // File Upload Configuration
   maxFileSize: parseInt(process.env['MAX_FILE_SIZE'] || '10485760', 10), // 10MB

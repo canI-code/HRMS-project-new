@@ -12,6 +12,7 @@ export interface LoginResponse {
     email: string;
     role: UserRole;
     organizationId: string;
+    mustChangePassword?: boolean;
   };
   accessToken: string;
   refreshToken: string;

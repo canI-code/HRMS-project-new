@@ -112,31 +112,30 @@ export default function MonthlyAttendancePage() {
             <Stat label="Absent" value={data.summary.absentDays} />
             <Stat label="Late" value={data.summary.lateDays} />
             <Stat label="Half Days" value={data.summary.halfDays} />
-            <Stat label="Working Minutes" value={data.summary.totalWorkingMinutes} />
-            <Stat label="Overtime Minutes" value={data.summary.totalOvertimeMinutes} />
+            <Stat label="Total Working Hrs" value={(data.summary.totalWorkingMinutes / 60).toFixed(1)} />
+            <Stat label="Total Overtime Hrs" value={(data.summary.totalOvertimeMinutes / 60).toFixed(1)} />
           </div>
-
           <div className="overflow-x-auto">
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Status</th>
                   <th className="px-3 py-2 text-left">Check In</th>
                   <th className="px-3 py-2 text-left">Check Out</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Working</th>
-                  <th className="px-3 py-2 text-left">Overtime</th>
+                  <th className="px-3 py-2 text-left">Total Hrs</th>
                 </tr>
               </thead>
               <tbody>
                 {data.records.map((r) => (
                   <tr key={r._id} className="border-t">
                     <td className="px-3 py-2">{new Date(r.date).toLocaleDateString()}</td>
+                    <td className="px-3 py-2">{r.status}</td>
                     <td className="px-3 py-2">{r.checkIn ? new Date(r.checkIn).toLocaleTimeString() : "-"}</td>
                     <td className="px-3 py-2">{r.checkOut ? new Date(r.checkOut).toLocaleTimeString() : "-"}</td>
-                    <td className="px-3 py-2">{r.status}</td>
-                    <td className="px-3 py-2">{r.workingMinutes ?? 0}</td>
-                    <td className="px-3 py-2">{r.overtimeMinutes ?? 0}</td>
+                    <td className="px-3 py-2">
+                      {r.workingMinutes ? (r.workingMinutes / 60).toFixed(2) : "0.00"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -148,7 +147,7 @@ export default function MonthlyAttendancePage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="border rounded p-3">
       <div className="text-sm text-gray-500">{label}</div>

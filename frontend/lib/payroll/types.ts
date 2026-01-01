@@ -51,7 +51,7 @@ export interface StartRunPayload {
   periodEnd: string;
   employees?: Array<{
     employeeId: string;
-    baseSalary: number;
+    baseSalaryMinor: number;
   }>;
 }
 

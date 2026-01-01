@@ -83,9 +83,8 @@ export function LeaveCalendar() {
       <div
         key={day}
         onClick={() => setSelectedDay(day)}
-        className={`p-3 border border-gray-200 min-h-[100px] cursor-pointer hover:bg-gray-50 ${
-          hasLeave ? "bg-blue-50" : ""
-        } ${selectedDay === day ? "ring-2 ring-blue-500" : ""}`}
+        className={`p-3 border border-gray-200 min-h-[100px] cursor-pointer hover:bg-gray-50 ${hasLeave ? "bg-blue-50" : ""
+          } ${selectedDay === day ? "ring-2 ring-blue-500" : ""}`}
       >
         <div className="font-semibold text-sm mb-2">{day}</div>
         {dayLeaves.length > 0 && (
@@ -145,9 +144,21 @@ export function LeaveCalendar() {
               <div key={leave._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <div className="font-medium">
-                    {leave.employeeId.firstName} {leave.employeeId.lastName}
+                    {leave.employeeId ? (
+                      <>
+                        {leave.employeeId.firstName} {leave.employeeId.lastName}
+                        <span className="ml-2 text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">
+                          {leave.employeeId.employeeCode || 'No ID'}
+                        </span>
+                      </>
+                    ) : 'Unknown Employee'}
                   </div>
-                  <div className="text-sm text-gray-600">{leave.employeeId.email}</div>
+                  {leave.employeeId?.professional?.title && (
+                    <div className="text-sm text-gray-600">{leave.employeeId.professional.title}</div>
+                  )}
+                  {leave.reason && (
+                    <div className="text-xs text-gray-500 mt-1 italic">"{leave.reason}"</div>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium capitalize">{leave.leaveType}</div>

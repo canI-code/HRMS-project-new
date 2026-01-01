@@ -95,7 +95,7 @@ export function PayrollRunPanel() {
         }
         return {
           employeeId: empId,
-          baseSalary: emp.salary.baseSalary, // baseSalary is already in paise from DB
+          baseSalaryMinor: emp.salary.baseSalary, // baseSalary is already in paise from DB
         };
       });
 
@@ -105,14 +105,14 @@ export function PayrollRunPanel() {
         employees: employeesData,
       }, tokens);
 
-      alert(`Payroll run created successfully!\nRun ID: ${run._id}\nEmployees: ${employeesData.length}\nStatus: ${run.status}`);
+      alert(`Payslip generated successfully!\nRun ID: ${run._id}\nEmployees: ${employeesData.length}\nStatus: ${run.status}`);
       setPeriodStart("");
       setPeriodEnd("");
       setSelectedEmployees([]);
       loadEmployees(); // Refresh the list
     } catch (error: any) {
-      console.error("Payroll run error:", error);
-      alert(error.message || error.response?.data?.message || "Failed to run payroll");
+      console.error("Payslip generation error:", error);
+      alert(error.message || error.response?.data?.message || "Failed to generate payslip");
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export function PayrollRunPanel() {
   if (!isAuthenticated) {
     return (
       <div className="alert alert-info">
-        Please login to run payroll.
+        Please login to generate payslips.
       </div>
     );
   }
@@ -278,7 +278,7 @@ export function PayrollRunPanel() {
               Processing...
             </>
           ) : (
-            `Run Payroll for ${selectedEmployees.length} Employee(s)`
+            `Generate Payslip for ${selectedEmployees.length} Employee(s)`
           )}
         </button>
         <button

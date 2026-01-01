@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
     setMessage(null);
 
     try {
-      await request("/auth/password/forgot", {
+      await request("/auth/password-reset/request", {
         method: "POST",
         body: { email },
         skipAuth: true,
@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
     setMessage(null);
 
     try {
-      await request("/auth/password/reset", {
+      await request("/auth/password-reset/confirm", {
         method: "POST",
         body: { email, token, password },
         skipAuth: true,

@@ -17,12 +17,12 @@ export default function PayrollHome() {
         <Protected roles={["hr_admin", "super_admin"]}>
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
-              <CardTitle className="text-lg">Salary Structure</CardTitle>
+              <CardTitle className="text-lg">Generate Payslip</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">Define and manage salary components and structures.</p>
-              <Link href="/payroll/structure">
-                <Button className="w-full">Manage Structure</Button>
+              <p className="text-sm text-muted-foreground mb-4">Process monthly payroll and generate slips.</p>
+              <Link href="/payroll/run">
+                <Button className="w-full" variant="default">Generate Payslip</Button>
               </Link>
             </CardContent>
           </Card>
@@ -34,23 +34,9 @@ export default function PayrollHome() {
               <CardTitle className="text-lg">Assign Salary</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">Assign salary structures to employees.</p>
+              <p className="text-sm text-muted-foreground mb-4">Configure salary structures and benefits for employees.</p>
               <Link href="/payroll/assign">
-                <Button className="w-full" variant="secondary">Assign Salary</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </Protected>
-
-        <Protected roles={["hr_admin", "super_admin"]}>
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg">Run Payroll</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">Process monthly payroll and generate slips.</p>
-              <Link href="/payroll/run">
-                <Button className="w-full" variant="default">Run Payroll</Button>
+                <Button className="w-full" variant="outline">Assign Salary</Button>
               </Link>
             </CardContent>
           </Card>
@@ -67,20 +53,6 @@ export default function PayrollHome() {
             </Link>
           </CardContent>
         </Card>
-
-        <Protected roles={["hr_admin", "super_admin"]}>
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg">Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">View detailed payroll reports and analytics.</p>
-              <Link href="/payroll/reports">
-                <Button className="w-full" variant="ghost">View Reports</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </Protected>
       </div>
     </div>
   );

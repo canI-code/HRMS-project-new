@@ -64,4 +64,12 @@ export const notificationApi = {
       tokens,
     });
   },
+
+  async createTemplate(payload: any, tokens: AuthTokens): Promise<NotificationTemplate> {
+    return request<NotificationTemplate>("/notifications/templates", {
+      method: "POST",
+      body: payload,
+      tokens,
+    });
+  },
 };

@@ -61,18 +61,18 @@ export class AuthService {
     logger.debug('Starting password comparison', { email, storedHashLen: user.password.length, providedPassLen: password.length });
     const isPasswordValid = await bcrypt.compare(password, user.password);
     logger.debug('Password comparison result', { email, isPasswordValid });
-    
+
     if (!isPasswordValid) {
       // Increment failed login attempts
       user.failedLoginAttempts += 1;
-      
+
       // Lock account after 5 failed attempts for 15 minutes
       if (user.failedLoginAttempts >= 5) {
         user.accountLockedUntil = new Date(Date.now() + 15 * 60 * 1000);
       }
-      
+
       await user.save();
-      
+
       logger.warn('Failed login attempt', { email, attempts: user.failedLoginAttempts });
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
     }
@@ -90,7 +90,7 @@ export class AuthService {
 
     // Check MFA requirement
     const mfaRequired = organization.settings.securitySettings.mfaRequired || user.mfaEnabled;
-    
+
     if (mfaRequired && !mfaToken) {
       logger.info('MFA required for login', { email });
       return {
@@ -148,6 +148,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         organizationId,
+        mustChangePassword: !!user.mustChangePassword,
       },
       accessToken,
       refreshToken,
@@ -307,7 +308,7 @@ export class AuthService {
     user.passwordResetToken = null as any;
     user.passwordResetExpires = null as any;
     user.lastPasswordChange = new Date();
-    
+
     await user.save();
 
     logger.info('Password reset successful', {
@@ -533,6 +534,9 @@ export class AuthService {
 
     // Update password
     user.password = newPassword;
+    if (user.mustChangePassword) {
+      user.mustChangePassword = false;
+    }
     await user.save();
 
     logger.info('Password changed', {

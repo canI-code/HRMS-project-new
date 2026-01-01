@@ -22,7 +22,7 @@ export function LeaveApprovalsPanel() {
     if (!state.tokens) return;
     try {
       setLoading(true);
-      const data = await leaveApi.listLeaves({ status: "pending" }, state.tokens);
+      const data = await leaveApi.listLeaves({ status: "pending", showAll: true }, state.tokens);
       setLeaves(data || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch pending leaves");
