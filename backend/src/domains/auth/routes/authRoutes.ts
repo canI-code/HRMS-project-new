@@ -92,6 +92,27 @@ router.post('/password-reset/request', AuthController.requestPasswordReset);
 router.post('/password-reset/confirm', AuthController.confirmPasswordReset);
 
 /**
+ * @route   POST /api/auth/otp/request
+ * @desc    Request OTP for password reset / new account creation
+ * @access  Public
+ */
+router.post('/otp/request', AuthController.requestOtp);
+
+/**
+ * @route   POST /api/auth/otp/verify
+ * @desc    Verify OTP
+ * @access  Public
+ */
+router.post('/otp/verify', AuthController.verifyOtp);
+
+/**
+ * @route   POST /api/auth/otp/set-password
+ * @desc    Set password after OTP verification
+ * @access  Public
+ */
+router.post('/otp/set-password', AuthController.setPasswordWithOtp);
+
+/**
  * @route   POST /api/auth/password/change
  * @desc    Change password (authenticated user)
  * @access  Private

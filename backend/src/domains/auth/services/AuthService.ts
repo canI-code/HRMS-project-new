@@ -16,6 +16,11 @@ import {
   PasswordResetRequest,
   PasswordResetConfirmRequest,
   MfaSetupResponse,
+  OtpPasswordResetRequest,
+  OtpPasswordResetResponse,
+  OtpVerifyRequest,
+  OtpVerifyResponse,
+  OtpSetPasswordRequest,
 } from '../types';
 
 /**
@@ -543,5 +548,280 @@ export class AuthService {
       userId: user._id.toString(),
       email: user.email,
     });
+  }
+
+  /**
+   * Request OTP for password reset / new employee account creation
+   * Sends a 6-digit OTP to the email address
+   */
+  static async requestOtpPasswordReset(data: OtpPasswordResetRequest): Promise<OtpPasswordResetResponse> {
+    const email = data.email.trim().toLowerCase();
+
+    // Check if user exists
+    let user = await User.findOne({ email, isDeleted: false });
+    let isNewEmployee = false;
+
+    if (!user) {
+      // Check if there's an employee with this email but no user account
+      const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+      const employee = await EmployeeModel.findOne({
+        'personal.contact.email': email,
+        isDeleted: { $ne: true },
+      });
+
+      if (!employee) {
+        // Don't reveal if email doesn't exist (security)
+        logger.warn('OTP requested for non-existent email', { email });
+        return {
+          message: 'If an account exists with this email, an OTP will be sent.',
+          isNewEmployee: false,
+          email,
+        };
+      }
+
+      isNewEmployee = true;
+      logger.info('OTP requested for new employee account', { email });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+    if (user) {
+      // Existing user - update OTP fields
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            passwordResetToken: hashedOtp,
+            passwordResetExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+          }
+        }
+      );
+    } else {
+      // Store OTP temporarily for new employee
+      // We'll use a temporary collection or the employee record
+      const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+      await EmployeeModel.updateOne(
+        { 'personal.contact.email': email },
+        {
+          $set: {
+            'onboarding.otpHash': hashedOtp,
+            'onboarding.otpExpires': new Date(Date.now() + 10 * 60 * 1000),
+          },
+        }
+      );
+    }
+
+    // TODO: Send email with OTP
+    // In production, use email service
+    logger.info('OTP generated for password reset', { email, otp: process.env['NODE_ENV'] === 'development' ? otp : '***' });
+
+    // For development, log the OTP prominently
+    if (process.env['NODE_ENV'] === 'development') {
+      console.log('\n========================================');
+      console.log('🔐 OTP FOR PASSWORD RESET');
+      console.log(`📧 Email: ${email}`);
+      console.log(`🔑 OTP: ${otp}`);
+      console.log('========================================\n');
+    }
+
+    return {
+      message: 'If an account exists with this email, an OTP will be sent.',
+      isNewEmployee,
+      email,
+      // Include OTP in response for development testing only
+      ...(process.env['NODE_ENV'] === 'development' ? { devOtp: otp } : {}),
+    };
+  }
+
+  /**
+   * Verify OTP
+   */
+  static async verifyOtp(data: OtpVerifyRequest): Promise<OtpVerifyResponse> {
+    const email = data.email.trim().toLowerCase();
+    const { otp } = data;
+
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+    console.log('\n========================================');
+    console.log('🔍 OTP VERIFICATION DEBUG');
+    console.log(`📧 Email (Processed): ${email}`);
+    console.log(`🔑 OTP provided: ${otp}`);
+    console.log(`#️⃣ Hashed OTP: ${hashedOtp.substring(0, 20)}...`);
+    console.log('========================================\n');
+
+    // Check for existing user
+    let user = await User.findOne({
+      email,
+      passwordResetToken: hashedOtp,
+      passwordResetExpires: { $gt: new Date() },
+      isDeleted: false,
+    }).select('+passwordResetToken +passwordResetExpires');
+
+    console.log('User found with matching OTP:', !!user);
+
+    if (user) {
+      // Generate reset token for password setting
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+      user.passwordResetToken = hashedResetToken;
+      user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes to set password
+      await user.save();
+
+      logger.info('OTP verified for existing user', { email });
+
+      return {
+        valid: true,
+        resetToken,
+        isNewEmployee: false,
+      };
+    }
+
+    // Check for new employee
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employee = await EmployeeModel.findOne({
+      'personal.contact.email': email,
+      'onboarding.otpHash': hashedOtp,
+      'onboarding.otpExpires': { $gt: new Date() },
+      isDeleted: { $ne: true },
+    });
+
+    if (employee) {
+      // Generate reset token for account creation
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+      employee.onboarding = employee.onboarding || { status: 'in_progress', steps: [] };
+      (employee.onboarding as any).otpHash = hashedResetToken;
+      (employee.onboarding as any).otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+      await employee.save();
+
+      logger.info('OTP verified for new employee', { email });
+
+      return {
+        valid: true,
+        resetToken,
+        isNewEmployee: true,
+      };
+    }
+
+    // DEBUG: If failed, try searching by email only to see what's in DB
+    console.log('--- FAILED VERIFICATION DEBUG ---');
+    const debugUser = await User.findOne({ email, isDeleted: false }).select('+passwordResetToken +passwordResetExpires');
+    if (debugUser) {
+      console.log('--- User Debug Info ---');
+      console.log('Stored Token:', debugUser.passwordResetToken ? debugUser.passwordResetToken.substring(0, 20) + '...' : 'NONE');
+      console.log('Target Token:', hashedOtp.substring(0, 20) + '...');
+      console.log('Token Match:', debugUser.passwordResetToken === hashedOtp);
+      console.log('Expires:', debugUser.passwordResetExpires);
+      console.log('Now:', new Date());
+    } else {
+      console.log('User not found in DB with email:', email);
+    }
+
+    const { EmployeeModel: DebugEmployeeModel } = await import('@/domains/employees/models/Employee');
+    const debugEmployee = await DebugEmployeeModel.findOne({ 'personal.contact.email': email, isDeleted: { $ne: true } });
+    if (debugEmployee) {
+      console.log('--- Employee Debug Info ---');
+      const otpHash = (debugEmployee.onboarding as any)?.otpHash;
+      const otpExpires = (debugEmployee.onboarding as any)?.otpExpires;
+      console.log('Stored Token:', otpHash ? otpHash.substring(0, 20) + '...' : 'NONE');
+      console.log('Target Token:', hashedOtp.substring(0, 20) + '...');
+      console.log('Token Match:', otpHash === hashedOtp);
+      console.log('Expires:', otpExpires);
+    } else {
+      console.log('Employee not found in DB with email:', email);
+    }
+
+    throw new AppError('Invalid or expired OTP', 400, 'INVALID_OTP');
+  }
+
+  /**
+   * Set password after OTP verification
+   */
+  static async setPasswordWithOtp(data: OtpSetPasswordRequest): Promise<void> {
+    const email = data.email.trim().toLowerCase();
+    const { resetToken, newPassword } = data;
+
+    const hashedResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      throw new AppError('Password must be at least 8 characters', 400, 'WEAK_PASSWORD');
+    }
+
+    // Check for existing user
+    let user = await User.findOne({
+      email,
+      passwordResetToken: hashedResetToken,
+      passwordResetExpires: { $gt: new Date() },
+      isDeleted: false,
+    }).select('+password +passwordHistory +passwordResetToken +passwordResetExpires');
+
+    if (user) {
+      // Check password history
+      if (user.passwordHistory && user.passwordHistory.length > 0) {
+        for (const oldPassword of user.passwordHistory) {
+          const isOldPassword = await bcrypt.compare(newPassword, oldPassword);
+          if (isOldPassword) {
+            throw new AppError('Cannot reuse recent passwords', 400, 'PASSWORD_REUSE_NOT_ALLOWED');
+          }
+        }
+      }
+
+      // Update password
+      user.password = newPassword;
+      user.passwordResetToken = null as any;
+      user.passwordResetExpires = null as any;
+      user.isEmailVerified = true;
+      user.mustChangePassword = false;
+      await user.save();
+
+      logger.info('Password reset successful via OTP', { email });
+      return;
+    }
+
+    // Check for new employee - create user account
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employee = await EmployeeModel.findOne({
+      'personal.contact.email': email,
+      'onboarding.otpHash': hashedResetToken,
+      'onboarding.otpExpires': { $gt: new Date() },
+      isDeleted: { $ne: true },
+    });
+
+    if (!employee) {
+      throw new AppError('Invalid or expired reset token', 400, 'INVALID_RESET_TOKEN');
+    }
+
+    // Create new user account for employee
+    const newUser = new User({
+      organizationId: employee.organizationId,
+      email,
+      password: newPassword,
+      firstName: employee.personal.firstName,
+      lastName: employee.personal.lastName,
+      role: 'employee',
+      employeeId: employee._id,
+      isActive: true,
+      isEmailVerified: true,
+      mustChangePassword: false,
+    });
+
+    await newUser.save();
+
+    // Link user to employee
+    employee.userId = newUser._id;
+    employee.onboarding = {
+      ...employee.onboarding,
+      status: 'completed',
+    } as any;
+    (employee.onboarding as any).otpHash = undefined;
+    (employee.onboarding as any).otpExpires = undefined;
+    await employee.save();
+
+    logger.info('New employee account created via OTP', { email, userId: newUser._id.toString() });
   }
 }

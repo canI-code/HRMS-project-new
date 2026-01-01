@@ -44,7 +44,7 @@ export class AuthController {
       }
 
       const accessToken = authHeader.split(' ')[1] as string;
-      
+
       await AuthService.logout(accessToken, refreshToken as string);
 
       res.status(200).json({
@@ -293,6 +293,75 @@ export class AuthController {
           organizationId: req.user.organizationId,
           userRole: req.user.userRole,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Request OTP for password reset
+   * POST /api/auth/otp/request
+   */
+  static async requestOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new AppError('Email is required', 400, 'MISSING_EMAIL');
+      }
+
+      const result = await AuthService.requestOtpPasswordReset({ email });
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Verify OTP
+   * POST /api/auth/otp/verify
+   */
+  static async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        throw new AppError('Email and OTP are required', 400, 'MISSING_FIELDS');
+      }
+
+      const result = await AuthService.verifyOtp({ email, otp });
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Set password after OTP verification
+   * POST /api/auth/otp/set-password
+   */
+  static async setPasswordWithOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, resetToken, newPassword } = req.body;
+
+      if (!email || !resetToken || !newPassword) {
+        throw new AppError('Email, reset token, and new password are required', 400, 'MISSING_FIELDS');
+      }
+
+      await AuthService.setPasswordWithOtp({ email, resetToken, newPassword });
+
+      res.status(200).json({
+        success: true,
+        message: 'Password set successfully',
       });
     } catch (error) {
       next(error);

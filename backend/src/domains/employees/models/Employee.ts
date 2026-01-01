@@ -88,6 +88,8 @@ export interface Employee extends BaseDocument {
     steps: { name: string; completedAt?: Date }[];
     startedAt?: Date;
     completedAt?: Date;
+    otpHash?: string;
+    otpExpires?: Date;
   };
 
   documents?: EmployeeDocumentRef[];
@@ -167,6 +169,8 @@ const EmployeeSchema = new Schema<Employee>({
     steps: { type: [{ name: { type: String, required: true }, completedAt: { type: Date } }], default: [] },
     startedAt: { type: Date },
     completedAt: { type: Date },
+    otpHash: { type: String }, // For OTP-based account activation
+    otpExpires: { type: Date },
   },
 
   documents: { type: [EmployeeDocumentRefSchema], default: [] },
@@ -190,7 +194,7 @@ EmployeeSchema.index({ organizationId: 1, 'professional.managerId': 1 });
 EmployeeSchema.index({ organizationId: 1, 'professional.department': 1, 'professional.title': 1 });
 
 // Data validation hooks
-EmployeeSchema.pre('save', function(next) {
+EmployeeSchema.pre('save', function (next) {
   // Ensure endDate is after startDate if provided
   const start = this.professional?.startDate;
   const end = this.professional?.endDate;

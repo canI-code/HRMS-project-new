@@ -32,6 +32,34 @@ export interface PasswordResetConfirmRequest {
   newPassword: string;
 }
 
+// OTP Password Reset Types
+export interface OtpPasswordResetRequest {
+  email: string;
+}
+
+export interface OtpPasswordResetResponse {
+  message: string;
+  isNewEmployee: boolean;
+  email: string;
+}
+
+export interface OtpVerifyRequest {
+  email: string;
+  otp: string;
+}
+
+export interface OtpVerifyResponse {
+  valid: boolean;
+  resetToken: string;
+  isNewEmployee: boolean;
+}
+
+export interface OtpSetPasswordRequest {
+  email: string;
+  resetToken: string;
+  newPassword: string;
+}
+
 export interface MfaSetupResponse {
   secret: string;
   qrCode: string;
