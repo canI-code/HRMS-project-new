@@ -9,6 +9,7 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '@/shared
 import { TokenBlacklistService } from '@/shared/utils/tokenBlacklist';
 import { AppError } from '@/shared/utils/AppError';
 import { logger } from '@/shared/utils/logger';
+import { EmailService } from '@/shared/utils/EmailService';
 import {
   LoginRequest,
   LoginResponse,
@@ -613,15 +614,14 @@ export class AuthService {
       );
     }
 
-    // TODO: Send email with OTP
-    // In production, use email service
-    logger.info('OTP generated for password reset', { email, otp: process.env['NODE_ENV'] === 'development' ? otp : '***' });
+    // Send email with OTP
+    await EmailService.sendOtpEmail(email, otp, isNewEmployee);
 
-    // For development, log the OTP prominently
+    // For development convenience, still log it
     if (process.env['NODE_ENV'] === 'development') {
       console.log('\n========================================');
-      console.log('🔐 OTP FOR PASSWORD RESET');
-      console.log(`📧 Email: ${email}`);
+      console.log('📬 REAL EMAIL SENT (Check your Inbox)');
+      console.log(`📧 To: ${email}`);
       console.log(`🔑 OTP: ${otp}`);
       console.log('========================================\n');
     }

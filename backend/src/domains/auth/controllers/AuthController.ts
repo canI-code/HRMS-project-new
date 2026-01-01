@@ -285,6 +285,13 @@ export class AuthController {
         throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
       }
 
+      // Fetch employee data associated with this user
+      const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+      const employee = await EmployeeModel.findOne({
+        userId: req.user.userId,
+        isDeleted: { $ne: true }
+      }).lean();
+
       // User info is already in req.user from auth middleware
       res.status(200).json({
         success: true,
@@ -292,6 +299,7 @@ export class AuthController {
           userId: req.user.userId,
           organizationId: req.user.organizationId,
           userRole: req.user.userRole,
+          employee: employee || null
         },
       });
     } catch (error) {

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar"
 import { useAuth } from "@/lib/auth/context"
+import { ProfileDialog } from "@/components/auth/ProfileDialog"
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -35,6 +36,7 @@ const navigation = [
 export function Sidebar() {
     const pathname = usePathname()
     const [collapsed, setCollapsed] = useState(false)
+    const [profileOpen, setProfileOpen] = useState(false)
     const { state, logout, hasRole } = useAuth()
     const user = state.user
 
@@ -90,22 +92,28 @@ export function Sidebar() {
             </div>
 
             <div className="border-t p-4">
-                <div className={cn("flex items-center", collapsed ? "justify-center" : "space-x-3")}>
-                    <Avatar>
+                <button
+                    onClick={() => setProfileOpen(true)}
+                    className={cn(
+                        "flex items-center w-full text-left p-1 rounded-lg transition-colors hover:bg-muted font-inherit",
+                        collapsed ? "justify-center" : "space-x-3"
+                    )}
+                >
+                    <Avatar className="h-9 w-9 shrink-0">
                         <AvatarImage src={`https://ui-avatars.com/api/?name=${user?.name || user?.email}`} />
                         <AvatarFallback>{(user?.name || user?.email)?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     {!collapsed && (
                         <div className="flex flex-col overflow-hidden">
-                            <span className="truncate text-sm font-medium text-foreground">
+                            <span className="truncate text-sm font-semibold text-foreground">
                                 {user?.name || user?.email}
                             </span>
-                            <span className="truncate text-xs text-muted-foreground">
-                                {state.roles?.[0] || 'User'}
+                            <span className="truncate text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                                {state.roles?.[0]?.replace('_', ' ') || 'User'}
                             </span>
                         </div>
                     )}
-                </div>
+                </button>
                 <div className="mt-4">
                     <Button
                         variant="ghost"
@@ -117,6 +125,8 @@ export function Sidebar() {
                     </Button>
                 </div>
             </div>
+
+            <ProfileDialog isOpen={profileOpen} onOpenChange={setProfileOpen} />
         </div>
     )
 }
