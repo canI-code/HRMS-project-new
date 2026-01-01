@@ -67,6 +67,7 @@ router.get('/form-options', async (req, res, next) => {
 // Current user's employee profile (no RBAC - restricted to own record)
 // Place this before parameterized routes to avoid matching "/me" as ":id"
 router.get('/me', EmployeeController.getMe);
+router.patch('/me', EmployeeController.updateMe);
 router.get('/:id', checkPermission('employees', 'read'), EmployeeController.get);
 /**
  * @openapi

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/lib/auth/context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -39,6 +40,7 @@ export function CreateDocumentDialog({
   onOpenChange,
   onSubmit,
 }: CreateDocumentDialogProps) {
+  const { hasRole } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateDocumentPayload>({
     title: '',
@@ -49,9 +51,7 @@ export function CreateDocumentDialog({
       allowedRoles: ['hr_admin'],
       allowedDepartments: [],
     },
-    storageKey: '',
-    mimeType: '',
-    sizeBytes: undefined,
+    file: null as any,
   });
   const [newTag, setNewTag] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -104,13 +104,9 @@ export function CreateDocumentDialog({
       return;
     }
 
-    const nextStorageKey = `upload/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-
     const payload: CreateDocumentPayload = {
       ...formData,
-      storageKey: nextStorageKey,
-      mimeType: file.type,
-      sizeBytes: file.size,
+      file,
     };
 
     setIsSubmitting(true);
@@ -125,9 +121,7 @@ export function CreateDocumentDialog({
           allowedRoles: ['hr_admin'],
           allowedDepartments: [],
         },
-        storageKey: '',
-        mimeType: '',
-        sizeBytes: undefined,
+        file: null as any,
       });
       setFile(null);
       onOpenChange(false);
@@ -255,24 +249,26 @@ export function CreateDocumentDialog({
           </div>
 
           {/* Access Policy */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Who can access this document?
-            </label>
-            <div className="space-y-2">
-              {ROLE_OPTIONS.map(({ label, value }) => (
-                <label key={value} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.accessPolicy.allowedRoles.includes(value)}
-                    onChange={(e) => handleRoleChange(value, e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-gray-700">{label}</span>
-                </label>
-              ))}
+          {!hasRole(['employee']) && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Who can access this document?
+              </label>
+              <div className="space-y-2">
+                {ROLE_OPTIONS.map(({ label, value }) => (
+                  <label key={value} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.accessPolicy.allowedRoles.includes(value)}
+                      onChange={(e) => handleRoleChange(value, e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">{label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <DialogFooter>
             <Button

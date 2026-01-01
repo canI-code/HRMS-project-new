@@ -2,12 +2,18 @@ import { Router } from 'express';
 import { documentController } from '../controllers/DocumentController';
 import { authenticate } from '@/shared/middleware/auth';
 import { checkPermission } from '@/shared/middleware/rbac';
+import { upload } from '@/shared/utils/storage';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.post('/', checkPermission('documents', 'create'), documentController.createDocument.bind(documentController));
+router.post(
+  '/',
+  checkPermission('documents', 'create'),
+  upload.single('file'),
+  documentController.createDocument.bind(documentController)
+);
 /**
  * @openapi
  * /documents:
@@ -30,6 +36,7 @@ router.post('/', checkPermission('documents', 'create'), documentController.crea
 router.post(
   '/:documentId/versions',
   checkPermission('documents', 'update'),
+  upload.single('file'),
   documentController.addVersion.bind(documentController)
 );
 /**

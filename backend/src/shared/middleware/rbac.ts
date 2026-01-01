@@ -35,17 +35,17 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'employees', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'employees', action: 'update', minRole: UserRole.HR_ADMIN, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'employees', action: 'delete', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
-  
+
   // Attendance management
   { resource: 'attendance', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'attendance', action: 'create', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'attendance', action: 'update', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
-  
+
   // Leave management
   { resource: 'leaves', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'leaves', action: 'create', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'leaves', action: 'update', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
-  
+
   // Payroll management
   { resource: 'payroll', action: 'read', minRole: UserRole.HR_ADMIN, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'payroll', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
@@ -53,16 +53,16 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'payroll-structure', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'payroll-structure', action: 'read', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'payroll-structure', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
-  
+
   // Performance management
   { resource: 'performance', action: 'read', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'performance', action: 'create', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
   { resource: 'performance', action: 'update', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
-  
+
   // Document management
-  { resource: 'documents', action: 'read', minRole: UserRole.MANAGER, allowSelfAccess: true, organizationBoundary: true },
-  { resource: 'documents', action: 'create', minRole: UserRole.MANAGER, organizationBoundary: true },
-  { resource: 'documents', action: 'update', minRole: UserRole.MANAGER, organizationBoundary: true },
+  { resource: 'documents', action: 'read', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
+  { resource: 'documents', action: 'create', minRole: UserRole.EMPLOYEE, organizationBoundary: true },
+  { resource: 'documents', action: 'update', minRole: UserRole.EMPLOYEE, organizationBoundary: true },
   { resource: 'documents', action: 'delete', minRole: UserRole.MANAGER, organizationBoundary: true },
 
   // Notification management
@@ -70,7 +70,7 @@ export const DEFAULT_PERMISSIONS: ResourcePermission[] = [
   { resource: 'notifications', action: 'create', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'notifications', action: 'update', minRole: UserRole.HR_ADMIN, organizationBoundary: true },
   { resource: 'notifications', action: 'preferences', minRole: UserRole.EMPLOYEE, allowSelfAccess: true, organizationBoundary: true },
-  
+
   // System administration
   { resource: 'admin', action: 'read', minRole: UserRole.HR_ADMIN, organizationBoundary: false },
   { resource: 'admin', action: 'create', minRole: UserRole.SUPER_ADMIN, organizationBoundary: false },
@@ -98,7 +98,7 @@ class PermissionRegistry {
   register(permission: ResourcePermission): void {
     const key = `${permission.resource}:${permission.action}`;
     this.permissions.set(key, permission);
-    
+
     logger.debug('Permission registered', {
       resource: permission.resource,
       action: permission.action,
@@ -127,7 +127,7 @@ class PermissionRegistry {
     targetOrganizationId?: Types.ObjectId
   ): boolean {
     const permission = this.getPermission(resource, action);
-    
+
     if (!permission) {
       logger.warn('Permission not found', { resource, action });
       return false;
@@ -141,7 +141,7 @@ class PermissionRegistry {
     // Check role hierarchy
     const userRoleLevel = ROLE_HIERARCHY[userRole];
     const requiredRoleLevel = ROLE_HIERARCHY[permission.minRole];
-    
+
     if (userRoleLevel < requiredRoleLevel) {
       // Check if self-access is allowed
       if (permission.allowSelfAccess && currentUserId && targetUserId && currentUserId.equals(targetUserId)) {
@@ -192,7 +192,7 @@ export const checkPermission = (
     }
 
     const { userId: currentUserId, organizationId: currentOrgId, userRole } = req.user;
-    
+
     // Get target user and organization from request if provided
     const targetUserId = options.getUserId ? options.getUserId(req) : undefined;
     const targetOrgId = options.getOrganizationId ? options.getOrganizationId(req) : currentOrgId;

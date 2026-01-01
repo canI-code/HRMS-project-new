@@ -124,7 +124,8 @@ export function DocumentsBrowser() {
 
   const categories = Array.from(new Set(documents.map(doc => doc.category)));
 
-  const canManage = hasRole(['manager', 'hr_admin']);
+  const canUpload = hasRole(['super_admin', 'employee', 'manager', 'hr_admin']);
+  const canManage = hasRole(['super_admin', 'manager', 'hr_admin']);
 
   return (
     <div className="space-y-6">
@@ -134,7 +135,7 @@ export function DocumentsBrowser() {
           <h1 className="text-3xl font-bold text-gray-900">Documents</h1>
           <p className="text-gray-600 mt-1">Manage and organize your documents</p>
         </div>
-        {canManage && (
+        {canUpload && (
           <Button onClick={() => setCreateDialogOpen(true)}>
             + Upload Document
           </Button>
@@ -236,6 +237,18 @@ export function DocumentsBrowser() {
 
                 {selectedDocument?._id === doc._id && (
                   <div className="flex gap-2 pt-2 border-t">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1"
+                      onClick={e => {
+                        e.stopPropagation();
+                        const currentVer = doc.versions.find(v => v.version === doc.currentVersion);
+                        if (currentVer) window.open(currentVer.storageKey, '_blank');
+                      }}
+                    >
+                      View
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

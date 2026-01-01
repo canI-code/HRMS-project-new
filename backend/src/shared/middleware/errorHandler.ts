@@ -95,7 +95,8 @@ export const errorHandler = (
     success: false,
     error: {
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected error occurred',
+      message: process.env['NODE_ENV'] === 'development' ? error.message : 'An unexpected error occurred',
+      details: process.env['NODE_ENV'] === 'development' ? error.stack : undefined,
       timestamp: new Date().toISOString(),
       requestId: req.headers['x-request-id'] || 'unknown',
     },

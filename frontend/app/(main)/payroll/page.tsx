@@ -31,12 +31,40 @@ export default function PayrollHome() {
         <Protected roles={["hr_admin", "super_admin"]}>
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
+              <CardTitle className="text-lg">Salary Structure</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">Define components like HRA, LTA, and deductions.</p>
+              <Link href="/payroll/structure">
+                <Button className="w-full" variant="outline">Manage Structure</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </Protected>
+
+        <Protected roles={["hr_admin", "super_admin"]}>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
               <CardTitle className="text-lg">Assign Salary</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">Configure salary structures and benefits for employees.</p>
+              <p className="text-sm text-muted-foreground mb-4">Configure salary packages for specific employees.</p>
               <Link href="/payroll/assign">
                 <Button className="w-full" variant="outline">Assign Salary</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </Protected>
+
+        <Protected roles={["hr_admin", "super_admin"]}>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg">Payroll Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">View detailed financial and tax summaries.</p>
+              <Link href="/payroll/reports">
+                <Button className="w-full" variant="outline">View Reports</Button>
               </Link>
             </CardContent>
           </Card>

@@ -53,7 +53,7 @@ export function SalaryAssignmentPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!tokens) {
       alert("Please login to continue");
       return;
@@ -66,7 +66,7 @@ export function SalaryAssignmentPanel() {
 
     try {
       setLoading(true);
-      
+
       // Convert rupees to paise (minor units)
       const baseSalaryInPaise = parseFloat(baseSalary) * 100;
 
@@ -79,17 +79,17 @@ export function SalaryAssignmentPanel() {
       }, tokens);
 
       alert("Salary assigned successfully!");
-      
+
       // Reset form
       setSelectedEmployee("");
       setBaseSalary("");
       setRemarks("");
-      
+
       // Reload employees
       loadData();
     } catch (error: any) {
       console.error("Failed to assign salary:", error);
-      alert(error.response?.data?.message || "Failed to assign salary");
+      alert(error.message || "Failed to assign salary");
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ export function SalaryAssignmentPanel() {
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="card bg-base-200 p-6">
         <h2 className="text-xl font-semibold mb-4">Assign Salary</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-control col-span-2">
             <label className="label">
@@ -240,8 +240,8 @@ export function SalaryAssignmentPanel() {
         </div>
 
         <div className="flex gap-4 mt-6">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary"
             disabled={loading}
           >
@@ -267,7 +267,7 @@ export function SalaryAssignmentPanel() {
       {/* Employees List */}
       <div className="card bg-base-200 p-6">
         <h2 className="text-xl font-semibold mb-4">Employees Salary Status</h2>
-        
+
         <div className="overflow-x-auto">
           <table className="table table-zebra w-full">
             <thead>

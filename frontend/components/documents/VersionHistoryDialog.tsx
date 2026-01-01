@@ -99,9 +99,29 @@ export function VersionHistoryDialog({
                       </div>
                     </div>
 
-                    <Button variant="outline" size="sm" className="ml-4" disabled title="Download not implemented yet">
-                      Download
-                    </Button>
+                    <div className="flex flex-col gap-2 ml-4">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => window.open(version.storageKey, '_blank')}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = window.document.createElement('a');
+                          link.href = version.storageKey;
+                          link.download = `${document.title}-v${version.version}`;
+                          window.document.body.appendChild(link);
+                          link.click();
+                          window.document.body.removeChild(link);
+                        }}
+                      >
+                        Download
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))

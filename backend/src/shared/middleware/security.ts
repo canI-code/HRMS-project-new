@@ -30,13 +30,16 @@ export const sanitizeRequest = (req: Request, _res: Response, next: NextFunction
 export const enforceJsonContentType = (req: Request, res: Response, next: NextFunction): void => {
   const methodNeedsBody = ['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase());
   if (methodNeedsBody) {
-    const contentType = req.headers['content-type'];
-    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
+    const contentType = req.headers['content-type']?.toLowerCase();
+    const isJson = contentType?.includes('application/json');
+    const isMultipart = contentType?.includes('multipart/form-data');
+
+    if (!contentType || (!isJson && !isMultipart)) {
       res.status(415).json({
         success: false,
         error: {
           code: 'UNSUPPORTED_MEDIA_TYPE',
-          message: 'Requests with a body must use application/json content type',
+          message: 'Requests with a body must use application/json or multipart/form-data content type',
           timestamp: new Date().toISOString(),
           requestId: req.headers['x-request-id'] || 'unknown',
         },

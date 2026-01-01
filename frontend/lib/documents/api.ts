@@ -10,9 +10,18 @@ import {
 export const documentsApi = {
   // Create a new document
   createDocument: async (payload: CreateDocumentPayload, tokens: AuthTokens): Promise<Document> => {
+    const formData = new FormData();
+    formData.append('file', payload.file);
+    formData.append('title', payload.title);
+    formData.append('category', payload.category);
+    if (payload.description) formData.append('description', payload.description);
+    if (payload.tags) formData.append('tags', JSON.stringify(payload.tags));
+    formData.append('accessPolicy', JSON.stringify(payload.accessPolicy));
+    if (payload.notes) formData.append('notes', payload.notes);
+
     return request<Document>('/documents', {
       method: 'POST',
-      body: payload,
+      body: formData,
       tokens,
     });
   },
@@ -35,9 +44,13 @@ export const documentsApi = {
 
   // Add a new version to document
   addVersion: async (documentId: string, payload: AddVersionPayload, tokens: AuthTokens): Promise<Document> => {
+    const formData = new FormData();
+    formData.append('file', payload.file);
+    if (payload.notes) formData.append('notes', payload.notes);
+
     return request<Document>(`/documents/${documentId}/versions`, {
       method: 'POST',
-      body: payload,
+      body: formData,
       tokens,
     });
   },

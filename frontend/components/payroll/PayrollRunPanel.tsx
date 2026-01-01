@@ -112,7 +112,7 @@ export function PayrollRunPanel() {
       loadEmployees(); // Refresh the list
     } catch (error: any) {
       console.error("Payslip generation error:", error);
-      alert(error.message || error.response?.data?.message || "Failed to generate payslip");
+      alert(error.message || "Failed to generate payslip");
     } finally {
       setLoading(false);
     }

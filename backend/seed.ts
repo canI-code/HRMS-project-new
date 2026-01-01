@@ -2,7 +2,20 @@ import { connectDatabase, disconnectDatabase } from '@/config/database';
 import { User } from '@/domains/auth/models/User';
 import { Organization } from '@/domains/auth/models/Organization';
 import { EmployeeModel } from '@/domains/employees/models/Employee';
+import { DocumentModel } from '@/domains/documents/models/Document';
+import { LeaveModel } from '@/domains/leave/models/Leave';
+import { LeavePolicyModel } from '@/domains/leave/models/LeavePolicy';
+import { AttendanceModel } from '@/domains/attendance/models/Attendance';
+import { AttendancePolicyModel } from '@/domains/attendance/models/AttendancePolicy';
+import { NotificationTemplateModel, NotificationPreferenceModel, NotificationLogModel } from '@/domains/notifications/models/Notification';
+import { PayrollRunModel } from '@/domains/payroll/models/PayrollRun';
+import { PayslipModel } from '@/domains/payroll/models/Payslip';
+import { SalaryStructureModel } from '@/domains/payroll/models/SalaryStructure';
+import { EmployeeSalaryModel } from '@/domains/payroll/models/EmployeeSalary';
+import { PerformanceGoalModel } from '@/domains/performance/models/PerformanceGoal';
+import { PerformanceReviewModel } from '@/domains/performance/models/PerformanceReview';
 import { logger } from '@/shared/utils/logger';
+import { UserRole } from '@/shared/types/common';
 import bcrypt from 'bcryptjs';
 
 async function seedDatabase() {
@@ -11,32 +24,48 @@ async function seedDatabase() {
     logger.info('Connected to database');
 
     // Clear existing data
-    await User.deleteMany({});
-    await Organization.deleteMany({});
-    await EmployeeModel.deleteMany({});
-    logger.info('Cleared existing data');
+    await Promise.all([
+      User.deleteMany({}),
+      Organization.deleteMany({}),
+      EmployeeModel.deleteMany({}),
+      DocumentModel.deleteMany({}),
+      LeaveModel.deleteMany({}),
+      LeavePolicyModel.deleteMany({}),
+      AttendanceModel.deleteMany({}),
+      AttendancePolicyModel.deleteMany({}),
+      NotificationTemplateModel.deleteMany({}),
+      NotificationPreferenceModel.deleteMany({}),
+      NotificationLogModel.deleteMany({}),
+      PayrollRunModel.deleteMany({}),
+      PayslipModel.deleteMany({}),
+      SalaryStructureModel.deleteMany({}),
+      EmployeeSalaryModel.deleteMany({}),
+      PerformanceGoalModel.deleteMany({}),
+      PerformanceReviewModel.deleteMany({}),
+    ]);
+    logger.info('Cleared existing data from all models');
 
     // Create organization
     const organization = await Organization.create({
-      name: 'Test Organization',
-      displayName: 'Test Organization',
-      domain: 'testorg', // lowercase, no dots
+      name: 'NexusHR Enterprise',
+      displayName: 'NexusHR Enterprise',
+      domain: 'nexushr',
       industry: 'Technology',
       size: 'enterprise',
-      country: 'US', // ISO 3166-1 alpha-2 code
-      timezone: 'UTC',
-      currency: 'USD',
-      fiscalYearStart: 1,
+      country: 'IN',
+      timezone: 'Asia/Kolkata',
+      currency: 'INR',
+      fiscalYearStart: 4, // April
       contactInfo: {
-        email: 'contact@testorg.com',
-        phone: '+1-555-0000',
-        website: 'https://testorg.com',
+        email: 'contact@nexushr.com',
+        phone: '+91 7219510168',
+        website: 'https://nexushr.com',
       },
       subscription: {
         plan: 'enterprise',
         status: 'active',
         startDate: new Date(),
-        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         maxEmployees: 1000,
         maxUsers: 500,
       },
@@ -52,7 +81,7 @@ async function seedDatabase() {
         },
         workingHours: {
           start: '09:00',
-          end: '17:00',
+          end: '18:00',
         },
         leavePolicies: {
           allowNegativeBalance: false,
@@ -61,14 +90,14 @@ async function seedDatabase() {
           carryForwardLimit: 5,
         },
         attendancePolicies: {
-          lateArrivalGracePeriod: 5,
-          earlyDepartureGracePeriod: 5,
+          lateArrivalGracePeriod: 15,
+          earlyDepartureGracePeriod: 15,
           overtimeEnabled: true,
           overtimeMultiplier: 1.5,
         },
         payrollSettings: {
           payrollCycle: 'monthly',
-          payrollDay: 25,
+          payrollDay: 1,
           taxCalculationEnabled: true,
         },
         securitySettings: {
@@ -79,7 +108,7 @@ async function seedDatabase() {
           passwordRequireSpecialChars: true,
           passwordExpiryDays: 90,
           mfaRequired: false,
-          sessionTimeoutMinutes: 30,
+          sessionTimeoutMinutes: 60,
           ipWhitelist: [],
         },
       },
@@ -88,148 +117,54 @@ async function seedDatabase() {
     });
     logger.info('Organization created', { organizationId: organization._id });
 
-    // Create admin user
-    const hashedPassword = await bcrypt.hash('Admin123!', 12);
-    const adminUser = await User.create({
+    // Create super admin user
+    const hashedPassword = await bcrypt.hash('superadmin@123!', 12);
+    const superAdminUser = await User.create({
       organizationId: organization._id,
-      email: 'admin@example.com',
+      email: 'vipulmayekar25@gmail.com',
       password: hashedPassword,
-      firstName: 'Admin',
-      lastName: 'User',
-      role: 'hr_admin',
+      firstName: 'Vipul',
+      lastName: 'Mayekar',
+      role: UserRole.SUPER_ADMIN,
       isActive: true,
       mfaEnabled: false,
       failedLoginAttempts: 0,
     });
-    logger.info('Admin user created', { userId: adminUser._id, email: adminUser.email });
+    logger.info('Super Admin user created', { userId: superAdminUser._id, email: superAdminUser.email });
 
-    // Create manager user
-    const managerPassword = await bcrypt.hash('Manager123!', 12);
-    const managerUser = await User.create({
+    // Create super admin employee profile
+    const superAdminEmployee = await EmployeeModel.create({
       organizationId: organization._id,
-      email: 'manager@example.com',
-      password: managerPassword,
-      firstName: 'Manager',
-      lastName: 'User',
-      role: 'manager',
-      isActive: true,
-      mfaEnabled: false,
-      failedLoginAttempts: 0,
-    });
-    logger.info('Manager user created', { userId: managerUser._id, email: managerUser.email });
-
-    // Create employee user
-    const employeePassword = await bcrypt.hash('Employee123!', 12);
-    const employeeUser = await User.create({
-      organizationId: organization._id,
-      email: 'employee@example.com',
-      password: employeePassword,
-      firstName: 'John',
-      lastName: 'Doe',
-      role: 'employee',
-      isActive: true,
-      mfaEnabled: false,
-      failedLoginAttempts: 0,
-    });
-    logger.info('Employee user created', { userId: employeeUser._id, email: employeeUser.email });
-
-    // Create admin employee profile
-    const adminEmployee = await EmployeeModel.create({
-      organizationId: organization._id,
-      userId: adminUser._id,
-      employeeCode: 'EMP001',
+      userId: superAdminUser._id,
+      employeeCode: 'ADMIN001',
       personal: {
-        firstName: 'Admin',
-        lastName: 'User',
+        firstName: 'Vipul',
+        lastName: 'Mayekar',
         contact: {
-          email: 'admin@example.com',
-          phone: '+1234567890',
+          email: 'vipulmayekar25@gmail.com',
+          phone: '+91 7219510168',
         },
         addresses: {
           current: {
-            line1: '123 Test Street',
-            city: 'Test City',
-            country: 'Test Country',
+            line1: 'Corporate Office',
+            city: 'Mumbai',
+            country: 'India',
           },
         },
       },
       professional: {
-        department: 'Human Resources',
-        title: 'HR Administrator',
+        department: 'Executive Management',
+        title: 'Super Administrator',
         employmentType: 'full_time',
         startDate: new Date(),
         status: 'active',
       },
     });
-    logger.info('Admin employee created', { employeeId: adminEmployee._id });
-
-    // Create manager employee profile
-    const managerEmployee = await EmployeeModel.create({
-      organizationId: organization._id,
-      userId: managerUser._id,
-      employeeCode: 'EMP002',
-      personal: {
-        firstName: 'Manager',
-        lastName: 'User',
-        contact: {
-          email: 'manager@example.com',
-          phone: '+1234567891',
-        },
-        addresses: {
-          current: {
-            line1: '456 Test Avenue',
-            city: 'Test City',
-            country: 'Test Country',
-          },
-        },
-      },
-      professional: {
-        department: 'Engineering',
-        title: 'Project Manager',
-        employmentType: 'full_time',
-        startDate: new Date(),
-        status: 'active',
-        managerId: adminEmployee._id,
-      },
-    });
-    logger.info('Manager employee created', { employeeId: managerEmployee._id });
-
-    // Create regular employee profile
-    const regularEmployee = await EmployeeModel.create({
-      organizationId: organization._id,
-      userId: employeeUser._id,
-      employeeCode: 'EMP003',
-      personal: {
-        firstName: 'John',
-        lastName: 'Doe',
-        contact: {
-          email: 'employee@example.com',
-          phone: '+1234567892',
-        },
-        addresses: {
-          current: {
-            line1: '789 Test Boulevard',
-            city: 'Test City',
-            country: 'Test Country',
-          },
-        },
-      },
-      professional: {
-        department: 'Engineering',
-        title: 'Software Engineer',
-        employmentType: 'full_time',
-        startDate: new Date(),
-        status: 'active',
-        managerId: managerEmployee._id,
-      },
-    });
-    logger.info('Employee created', { employeeId: regularEmployee._id });
+    logger.info('Super Admin employee profile created', { employeeId: superAdminEmployee._id });
 
     logger.info('✅ Database seeded successfully');
     logger.info('📝 You can now login with:');
-    logger.info('   Email: admin@example.com, Password: Admin123!');
-    logger.info('   Email: manager@example.com, Password: Manager123!');
-    logger.info('   Email: employee@example.com, Password: Employee123!');
+    logger.info('   Email: vipulmayekar25@gmail.com, Password: superadmin@123!');
   } catch (error) {
     logger.error('Seed failed', error);
     process.exit(1);

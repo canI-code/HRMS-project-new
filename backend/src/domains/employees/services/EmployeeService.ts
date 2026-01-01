@@ -170,6 +170,17 @@ export class EmployeeService {
     );
     if (!employee) throw new AppError('Employee update failed', 400, 'EMPLOYEE_UPDATE_FAILED');
 
+    // Sync names with User model if updated
+    if (updates.personal?.firstName || updates.personal?.lastName) {
+      const { User } = await import('@/domains/auth/models/User');
+      await User.findByIdAndUpdate(employee.userId, {
+        $set: {
+          ...(updates.personal.firstName && { firstName: updates.personal.firstName }),
+          ...(updates.personal.lastName && { lastName: updates.personal.lastName }),
+        }
+      });
+    }
+
     EmployeeService.log(ctx, AuditAction.UPDATE, 'employees', employee._id, before, employee);
     return employee;
   }

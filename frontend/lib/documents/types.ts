@@ -42,17 +42,12 @@ export interface CreateDocumentPayload {
   description?: string;
   tags?: string[];
   accessPolicy: AccessPolicy;
-  storageKey?: string; // for initial upload
-  mimeType?: string;
-  sizeBytes?: number;
+  file: File;
   notes?: string;
 }
 
 export interface AddVersionPayload {
-  storageKey: string;
-  mimeType?: string;
-  sizeBytes?: number;
-  checksum?: string;
+  file: File;
   notes?: string;
 }
 

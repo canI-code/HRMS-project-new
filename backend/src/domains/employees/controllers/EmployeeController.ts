@@ -71,6 +71,20 @@ export class EmployeeController {
     }
   }
 
+  static async updateMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ctx = req.user!;
+      const employeeRecord = await EmployeeService.getEmployeeByUserId(ctx, new Types.ObjectId(ctx.userId));
+      if (!employeeRecord) {
+        throw new Error('Employee record not found');
+      }
+      const updated = await EmployeeService.updateEmployee(ctx, employeeRecord._id, req.body);
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const ctx = req.user!;
