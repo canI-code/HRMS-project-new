@@ -3,11 +3,33 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../lib/auth/context";
 import { leaveApi } from "../../lib/leave/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface LeaveBalance {
   leaveType: string;
   totalDays: number;
 }
+
+const leaveTypeInfo: Record<string, { color: string; description: string }> = {
+  casual: {
+    color: "bg-blue-100 border-blue-300",
+    description: "For personal reasons and personal matters"
+  },
+  sick: {
+    color: "bg-red-100 border-red-300",
+    description: "For medical/health reasons (may require certificate)"
+  },
+  earned: {
+    color: "bg-green-100 border-green-300",
+    description: "Can be accumulated and carried forward to next year"
+  },
+  unpaid: {
+    color: "bg-gray-100 border-gray-300",
+    description: "No limit, deducted from salary"
+  }
+};
 
 export function LeavePolicyForm() {
   const { state } = useAuth();
@@ -65,57 +87,119 @@ export function LeavePolicyForm() {
   };
 
   return (
-    <div className="max-w-2xl">
-      {error && <div className="alert alert-error mb-4">{error}</div>}
-      {success && <div className="alert alert-success mb-4">Leave policy updated successfully!</div>}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Form */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Leave Allocations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <p className="text-sm text-muted-foreground mb-6">
+                  Configure the annual leave balance for each leave type. These apply to all employees.
+                </p>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+                <div className="space-y-4">
+                  {leaveBalances.map((balance, index) => {
+                    const info = leaveTypeInfo[balance.leaveType] || {};
+                    return (
+                      <div
+                        key={balance.leaveType}
+                        className={`p-4 border-2 rounded-lg transition-all ${info.color}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <label className="block">
+                              <span className="font-semibold capitalize text-gray-800">{balance.leaveType} Leave</span>
+                              <p className="text-xs text-gray-600 mt-1">{info.description}</p>
+                            </label>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="number"
+                              value={balance.totalDays}
+                              onChange={(e) =>
+                                handleChange(index, "totalDays", parseInt(e.target.value) || 0)
+                              }
+                              className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
+                              min="0"
+                              max="365"
+                            />
+                            <span className="text-sm font-medium text-gray-700 w-16">days/year</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
+
+                {success && (
+                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                    <p className="text-sm text-green-700">Leave policy updated successfully!</p>
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Saving..." : "Save Policy"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Info Panel */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Annual Leave Balances</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Configure the default annual leave balance for each leave type. These apply to all employees.
-          </p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Leave Types Guide</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-semibold text-blue-700 mb-1">Casual Leave</h4>
+                <p className="text-muted-foreground text-xs">For personal reasons, personal matters, and general leave</p>
+              </div>
+              <div className="border-t pt-4">
+                <h4 className="font-semibold text-red-700 mb-1">Sick Leave</h4>
+                <p className="text-muted-foreground text-xs">For medical and health reasons. Medical certificate may be required for 3+ consecutive days</p>
+              </div>
+              <div className="border-t pt-4">
+                <h4 className="font-semibold text-green-700 mb-1">Earned Leave</h4>
+                <p className="text-muted-foreground text-xs">Can be accumulated and carried forward to the next fiscal year</p>
+              </div>
+              <div className="border-t pt-4">
+                <h4 className="font-semibold text-gray-700 mb-1">Unpaid Leave</h4>
+                <p className="text-muted-foreground text-xs">No limit on duration. Salary will be deducted for these days</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="text-base">Tips</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs">
+              <div>
+                <p className="font-medium text-gray-700 mb-1">💡 Best Practices:</p>
+                <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Casual: 12-15 days</li>
+                  <li>Sick: 10-12 days</li>
+                  <li>Earned: 15-20 days</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {leaveBalances.map((balance, index) => (
-          <div key={balance.leaveType} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex-1">
-              <label className="label">
-                <span className="label-text font-medium capitalize">{balance.leaveType} Leave</span>
-              </label>
-            </div>
-            <div className="w-32">
-              <input
-                type="number"
-                value={balance.totalDays}
-                onChange={(e) => handleChange(index, "totalDays", parseInt(e.target.value) || 0)}
-                className="input input-bordered w-full"
-                min="0"
-                max="365"
-              />
-            </div>
-            <div className="text-sm text-gray-600">days/year</div>
-          </div>
-        ))}
-
-        <div className="border-t pt-4">
-          <h3 className="text-md font-semibold mb-2">Policy Rules</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            <li>• Casual leave: Can be taken for personal reasons</li>
-            <li>• Sick leave: Requires medical certificate for 3+ consecutive days</li>
-            <li>• Earned leave: Can be accumulated and carried forward</li>
-            <li>• Unpaid leave: No limit, deducted from salary</li>
-          </ul>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn btn-primary w-full"
-        >
-          {loading ? "Saving..." : "Save Policy"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

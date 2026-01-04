@@ -375,4 +375,27 @@ export class AuthController {
       next(error);
     }
   }
+
+  /**
+   * Check if email exists
+   * POST /api/auth/check-email
+   */
+  static async checkEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new AppError('Email is required', 400, 'MISSING_EMAIL');
+      }
+
+      await AuthService.checkEmailExists({ email });
+
+      res.status(200).json({
+        success: true,
+        message: 'Email exists',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -6,6 +6,9 @@ import { employeeApi } from "@/lib/employees/api";
 import type { Employee } from "@/lib/employees/types";
 import { attendanceApi } from "@/lib/attendance/api";
 import type { AttendanceRecord } from "@/lib/attendance/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Clock, User, CheckCircle, Loader2, AlertCircle, LogIn } from "lucide-react";
 
 export default function CheckInPage() {
   const { state, refreshTokens } = useAuth();
@@ -76,36 +79,94 @@ export default function CheckInPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-xl font-semibold">Check In</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <label className="block">
-          <span className="text-sm">Employee</span>
-          <select
-            className="mt-1 w-full border rounded p-2"
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
-            disabled={!isPrivileged}
-          >
-            <option value="">Select employee</option>
-            {employees.map((e) => (
-              <option key={e._id} value={e._id}>
-                {e.personal.firstName} {e.personal.lastName} ({e.employeeCode})
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" disabled={!canSubmit} className="btn btn-primary">
-          {loading ? "Checking in..." : "Check In"}
-        </button>
-      </form>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Check In</h1>
+        <p className="text-muted-foreground">Record employee attendance check-in time</p>
+      </div>
 
-      {error && <p className="text-red-600">{error}</p>}
-      {result && (
-        <div className="mt-4 border rounded p-3">
-          <p>Checked in at: {result.checkIn ? new Date(result.checkIn).toLocaleString() : "-"}</p>
-          <p>Status: {result.status}</p>
-        </div>
-      )}
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LogIn className="h-5 w-5" />
+            Attendance Check In
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Employee
+              </label>
+              <select
+                className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                disabled={!isPrivileged}
+              >
+                <option value="">Select employee</option>
+                {employees.map((e) => (
+                  <option key={e._id} value={e._id}>
+                    {e.personal.firstName} {e.personal.lastName} ({e.employeeCode})
+                  </option>
+                ))}
+              </select>
+              {!isPrivileged && (
+                <p className="text-xs text-muted-foreground">You can only check in for yourself</p>
+              )}
+            </div>
+
+            <Button type="submit" disabled={!canSubmit} className="w-full" size="lg">
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Checking in...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-5 w-5 mr-2" />
+                  Check In
+                </>
+              )}
+            </Button>
+          </form>
+
+          {error && (
+            <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-red-50 border border-red-200">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-red-800">Check-in Failed</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div className="mt-6 p-6 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+                <h3 className="font-semibold text-green-900">Successfully Checked In</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-green-600" />
+                  <span className="text-green-800">
+                    Check-in time: {result.checkIn ? new Date(result.checkIn).toLocaleString('en-US', { 
+                      dateStyle: 'medium', 
+                      timeStyle: 'short' 
+                    }) : "-"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    {result.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

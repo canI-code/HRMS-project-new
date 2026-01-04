@@ -5,6 +5,9 @@ import { useAuth } from "@/lib/auth/context";
 import { Protected } from "@/components/auth/Protected";
 import { attendanceApi } from "@/lib/attendance/api";
 import type { AttendancePolicy, UpsertPolicyPayload } from "@/lib/attendance/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function PolicyPage() {
   const { state, refreshTokens } = useAuth();
@@ -52,41 +55,156 @@ export default function PolicyPage() {
 
   return (
     <Protected roles={["hr_admin", "super_admin"]} fallback={<p>Access denied.</p>}>
-      <div className="p-6 space-y-6">
-        <h1 className="text-xl font-semibold">Attendance Policy</h1>
-        <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="block">
-            <span className="text-sm">Name</span>
-            <input className="mt-1 w-full border rounded p-2" value={payload.name} onChange={(e) => setField("name", e.target.value)} />
-          </label>
-          <NumberField label="Standard Minutes" value={payload.standardWorkingMinutes} onChange={(v) => setField("standardWorkingMinutes", v)} />
-          <NumberField label="Half-Day Threshold" value={payload.halfDayThresholdMinutes} onChange={(v) => setField("halfDayThresholdMinutes", v)} />
-          <NumberField label="Late Grace Minutes" value={payload.lateArrivalGraceMinutes} onChange={(v) => setField("lateArrivalGraceMinutes", v)} />
-          <NumberField label="Late Threshold Minutes" value={payload.lateArrivalThresholdMinutes} onChange={(v) => setField("lateArrivalThresholdMinutes", v)} />
-          <NumberField label="Overtime Starts After" value={payload.overtimeStartsAfterMinutes} onChange={(v) => setField("overtimeStartsAfterMinutes", v)} />
-          <button type="submit" className="btn btn-warning" disabled={loading}>{loading ? "Saving..." : "Save Policy"}</button>
-        </form>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Attendance Policy</h1>
+          <p className="text-muted-foreground mt-2">Configure attendance rules and thresholds</p>
+        </div>
 
-        {error && <p className="text-red-600">{error}</p>}
-        {policy && (
-          <div className="border rounded p-3">
-            <p>Policy updated: {policy.name}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Policy Configuration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={onSubmit} className="space-y-6">
+                  {/* Policy Name */}
+                  <div>
+                    <label className="block">
+                      <span className="text-sm font-medium">Policy Name</span>
+                      <input
+                        type="text"
+                        className="mt-2 w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={payload.name}
+                        onChange={(e) => setField("name", e.target.value)}
+                        placeholder="e.g., Standard Policy"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">Working Hours</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField
+                        label="Standard Working Minutes"
+                        value={payload.standardWorkingMinutes}
+                        onChange={(v) => setField("standardWorkingMinutes", v)}
+                        hint="480 = 8 hours"
+                      />
+                      <NumberField
+                        label="Half-Day Threshold (mins)"
+                        value={payload.halfDayThresholdMinutes}
+                        onChange={(v) => setField("halfDayThresholdMinutes", v)}
+                        hint="Minimum hours for half day"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">Late Arrival Policy</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField
+                        label="Grace Period (mins)"
+                        value={payload.lateArrivalGraceMinutes}
+                        onChange={(v) => setField("lateArrivalGraceMinutes", v)}
+                        hint="Allowed late arrival without penalty"
+                      />
+                      <NumberField
+                        label="Late Threshold (mins)"
+                        value={payload.lateArrivalThresholdMinutes}
+                        onChange={(v) => setField("lateArrivalThresholdMinutes", v)}
+                        hint="Mark as late after this time"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">Overtime</h3>
+                    <NumberField
+                      label="Overtime Starts After (mins)"
+                      value={payload.overtimeStartsAfterMinutes}
+                      onChange={(v) => setField("overtimeStartsAfterMinutes", v)}
+                      hint="Minimum working hours to be counted as overtime"
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                      <AlertCircle className="h-5 w-5 text-destructive" />
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
+                  {policy && (
+                    <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <p className="text-sm text-green-700">Policy updated successfully!</p>
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Saving..." : "Save Policy"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
-        )}
+
+          {/* Info Panel */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Policy Guide</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div>
+                  <p className="font-medium mb-2">Standard Working Hours</p>
+                  <p className="text-muted-foreground">Set the expected working hours per day (typically 480 mins = 8 hours)</p>
+                </div>
+                <div className="border-t pt-4">
+                  <p className="font-medium mb-2">Half-Day Threshold</p>
+                  <p className="text-muted-foreground">Minimum hours required to mark attendance as full day (e.g., 4 hours)</p>
+                </div>
+                <div className="border-t pt-4">
+                  <p className="font-medium mb-2">Grace Period</p>
+                  <p className="text-muted-foreground">Allow employees to arrive late without penalty (e.g., 15 mins)</p>
+                </div>
+                <div className="border-t pt-4">
+                  <p className="font-medium mb-2">Late Threshold</p>
+                  <p className="text-muted-foreground">Time after which late arrival is recorded (e.g., 30 mins after start time)</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </Protected>
   );
 }
 
-function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function NumberField({
+  label,
+  value,
+  onChange,
+  hint
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  hint?: string;
+}) {
   return (
     <label className="block">
-      <span className="text-sm">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
       <input
         type="number"
-        className="mt-1 w-full border rounded p-2"
+        className="mt-2 w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value || "0", 10))}
+        min="0"
       />
     </label>
   );

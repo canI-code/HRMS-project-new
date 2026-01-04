@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../lib/auth/context";
 import { payrollApi } from "../../lib/payroll/api";
 import { EmployeeWithSalary, SalaryStructure } from "../../lib/payroll/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { User, DollarSign, Calendar, FileText, Loader2, AlertCircle, CheckCircle, Briefcase, RefreshCw } from "lucide-react";
 
 export function SalaryAssignmentPanel() {
   const { state } = useAuth();
@@ -107,212 +110,279 @@ export function SalaryAssignmentPanel() {
 
   if (!isAuthenticated) {
     return (
-      <div className="alert alert-info">
-        Please login to manage salary assignments.
-      </div>
+      <Card>
+        <CardContent className="py-8">
+          <div className="flex items-center gap-3 text-blue-600">
+            <AlertCircle className="h-5 w-5" />
+            <p>Please login to manage salary assignments.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (loadingData) {
     return (
-      <div className="text-center py-8">
-        <span className="loading loading-spinner loading-lg"></span>
-        <p className="mt-2">Loading...</p>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (structures.length === 0) {
     return (
-      <div className="alert alert-warning">
-        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <span>No salary structure found. Please create a salary structure first before assigning salaries.</span>
-      </div>
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardContent className="py-8">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-yellow-600 mt-0.5" />
+            <div>
+              <p className="font-medium text-yellow-800">No Salary Structure Found</p>
+              <p className="text-sm text-yellow-700 mt-2">
+                Please create a salary structure first before assigning salaries.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="card bg-base-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Assign Salary</h2>
+      {/* Assignment Form Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            Assign Salary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Employee Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Select Employee *
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
+                required
+              >
+                <option value="">Choose an employee</option>
+                {employees.map((emp) => (
+                  <option key={emp.employeeId._id} value={emp.employeeId._id}>
+                    {emp.employeeId.employeeCode} - {emp.employeeId.personal.firstName} {emp.employeeId.personal.lastName}
+                    {emp.salary && " (Already has salary)"}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-control col-span-2">
-            <label className="label">
-              <span className="label-text font-semibold">Select Employee *</span>
-            </label>
-            <select
-              className="select select-bordered"
-              value={selectedEmployee}
-              onChange={(e) => setSelectedEmployee(e.target.value)}
-              required
-            >
-              <option value="">Choose an employee</option>
-              {employees.map((emp) => (
-                <option key={emp.employeeId._id} value={emp.employeeId._id}>
-                  {emp.employeeId.employeeCode} - {emp.employeeId.personal.firstName} {emp.employeeId.personal.lastName}
-                  {emp.salary && " (Already has salary)"}
-                </option>
-              ))}
-            </select>
-          </div>
+            {/* Employee Details Display */}
+            {selectedEmployeeData && (
+              <Card className="bg-muted/50">
+                <CardContent className="pt-6">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Employee Details
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Department</p>
+                      <p className="font-medium">{selectedEmployeeData.employeeId.professional.department || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Designation</p>
+                      <p className="font-medium">{selectedEmployeeData.employeeId.professional.title || 'N/A'}</p>
+                    </div>
+                    {selectedEmployeeData.salary && (
+                      <>
+                        <div>
+                          <p className="text-muted-foreground">Current Base Salary</p>
+                          <p className="font-semibold text-green-600">{formatCurrency(selectedEmployeeData.salary.baseSalary)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Current Structure</p>
+                          <p className="font-medium">{selectedEmployeeData.salary.salaryStructureId.name}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-          {selectedEmployeeData && (
-            <div className="col-span-2 bg-base-300 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Employee Details</h3>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p><strong>Department:</strong> {selectedEmployeeData.employeeId.professional.department || 'N/A'}</p>
-                <p><strong>Designation:</strong> {selectedEmployeeData.employeeId.professional.title || 'N/A'}</p>
-                {selectedEmployeeData.salary && (
-                  <>
-                    <p><strong>Current Base Salary:</strong> {formatCurrency(selectedEmployeeData.salary.baseSalary)}</p>
-                    <p><strong>Current Structure:</strong> {selectedEmployeeData.salary.salaryStructureId.name}</p>
-                  </>
-                )}
+            {/* Form Fields Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Salary Structure *
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={selectedStructure}
+                  onChange={(e) => setSelectedStructure(e.target.value)}
+                  required
+                >
+                  {structures.map((structure) => (
+                    <option key={structure._id} value={structure._id}>
+                      {structure.name} (v{structure.version})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Base Salary (₹) *
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={baseSalary}
+                  onChange={(e) => setBaseSalary(e.target.value)}
+                  placeholder="e.g., 50000"
+                  min="0"
+                  step="100"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">Monthly base salary in rupees</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Effective From *
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={effectiveFrom}
+                  onChange={(e) => setEffectiveFrom(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Remarks
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder="Optional notes"
+                />
               </div>
             </div>
-          )}
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Salary Structure *</span>
-            </label>
-            <select
-              className="select select-bordered"
-              value={selectedStructure}
-              onChange={(e) => setSelectedStructure(e.target.value)}
-              required
-            >
-              {structures.map((structure) => (
-                <option key={structure._id} value={structure._id}>
-                  {structure.name} (v{structure.version})
-                </option>
-              ))}
-            </select>
-          </div>
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-4">
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Assigning...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Assign Salary
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={loadData}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Base Salary (₹) *</span>
-            </label>
-            <input
-              type="number"
-              className="input input-bordered"
-              value={baseSalary}
-              onChange={(e) => setBaseSalary(e.target.value)}
-              placeholder="e.g., 50000"
-              min="0"
-              step="100"
-              required
-            />
-            <label className="label">
-              <span className="label-text-alt">Monthly base salary in rupees</span>
-            </label>
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Effective From *</span>
-            </label>
-            <input
-              type="date"
-              className="input input-bordered"
-              value={effectiveFrom}
-              onChange={(e) => setEffectiveFrom(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Remarks</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              placeholder="Optional notes"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-4 mt-6">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="loading loading-spinner"></span>
-                Assigning...
-              </>
-            ) : (
-              "Assign Salary"
-            )}
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={loadData}
-          >
-            Refresh
-          </button>
-        </div>
-      </form>
-
-      {/* Employees List */}
-      <div className="card bg-base-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Employees Salary Status</h2>
-
-        <div className="overflow-x-auto">
-          <table className="table table-zebra w-full">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Base Salary</th>
-                <th>Structure</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp) => (
-                <tr key={emp.employeeId._id}>
-                  <td>{emp.employeeId.employeeCode}</td>
-                  <td>{emp.employeeId.personal.firstName} {emp.employeeId.personal.lastName}</td>
-                  <td>{emp.employeeId.professional.department || '-'}</td>
-                  <td>
-                    {emp.salary ? (
-                      <span className="font-semibold">{formatCurrency(emp.salary.baseSalary)}</span>
-                    ) : (
-                      <span className="text-error">Not Assigned</span>
-                    )}
-                  </td>
-                  <td>
-                    {emp.salary ? (
-                      <span className="text-sm">{emp.salary.salaryStructureId.name} (v{emp.salary.salaryStructureId.version})</span>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td>
-                    {emp.salary ? (
-                      <span className="badge badge-success">Active</span>
-                    ) : (
-                      <span className="badge badge-warning">Pending</span>
-                    )}
-                  </td>
+      {/* Employees List Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Employees Salary Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4 font-medium text-sm">Code</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">Department</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">Base Salary</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">Structure</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              </thead>
+              <tbody>
+                {employees.map((emp) => (
+                  <tr key={emp.employeeId._id} className="border-b hover:bg-muted/50">
+                    <td className="py-3 px-4 text-sm">{emp.employeeId.employeeCode}</td>
+                    <td className="py-3 px-4 text-sm font-medium">
+                      {emp.employeeId.personal.firstName} {emp.employeeId.personal.lastName}
+                    </td>
+                    <td className="py-3 px-4 text-sm">{emp.employeeId.professional.department || '-'}</td>
+                    <td className="py-3 px-4 text-sm">
+                      {emp.salary ? (
+                        <span className="font-semibold text-green-600 flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          {formatCurrency(emp.salary.baseSalary)}
+                        </span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not Assigned</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-sm">
+                      {emp.salary ? (
+                        <span className="text-xs">{emp.salary.salaryStructureId.name} (v{emp.salary.salaryStructureId.version})</span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      {emp.salary ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <CheckCircle className="h-3 w-3" /> Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                          <AlertCircle className="h-3 w-3" /> Pending
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -23,6 +23,8 @@ export default function ForgotPasswordPage() {
     const [error, setError] = useState<string | null>(null)
     const [message, setMessage] = useState<string | null>(null)
     const [devOtp, setDevOtp] = useState<string | null>(null)
+    const [emailError, setEmailError] = useState<string | null>(null)
+    const [emailValidating, setEmailValidating] = useState(false)
 
     const handleRequestOtp = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -44,10 +46,12 @@ export default function ForgotPasswordPage() {
             }
 
             setIsNewEmployee(data.data?.isNewEmployee || false)
-            // In development, the OTP is returned in the response
+            
+            // Log OTP to console for testing purposes (in case email doesn't reach)
             if (data.data?.devOtp) {
-                setDevOtp(data.data.devOtp)
+                console.log(`OTP for testing (${email}): ${data.data.devOtp}`);
             }
+            
             setMessage("If an account exists with this email, an OTP has been sent.")
             setStep("otp")
         } catch (err: any) {
@@ -119,6 +123,36 @@ export default function ForgotPasswordPage() {
             setError(err.message || "Failed to set password")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEmail = e.target.value
+        setEmail(newEmail)
+        setEmailError(null)
+
+        if (!newEmail || !newEmail.includes("@")) {
+            return
+        }
+
+        setEmailValidating(true)
+
+        try {
+            const res = await fetch(`${env.apiBaseUrl}/auth/check-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: newEmail }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                setEmailError("This email does not exist in our system")
+            }
+        } catch (err) {
+            // Silently fail on network errors during validation
+        } finally {
+            setEmailValidating(false)
         }
     }
 
@@ -205,12 +239,15 @@ export default function ForgotPasswordPage() {
                                             type="email"
                                             placeholder="you@company.com"
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            onChange={handleEmailChange}
                                             required
                                             className="pl-10"
                                         />
                                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     </div>
+                                    {emailError && (
+                                        <p className="text-xs text-destructive">{emailError}</p>
+                                    )}
                                 </div>
 
                                 {error && (
@@ -220,7 +257,7 @@ export default function ForgotPasswordPage() {
                                     </div>
                                 )}
 
-                                <Button type="submit" className="w-full" disabled={loading}>
+                                <Button type="submit" className="w-full" disabled={loading || !!emailError}>
                                     {loading ? (
                                         <>
                                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -250,15 +287,6 @@ export default function ForgotPasswordPage() {
                                 <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                                     <CheckCircle2 className="h-4 w-4" />
                                     {message}
-                                </div>
-                            )}
-
-                            {devOtp && (
-                                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                                    <p className="text-xs text-amber-700 font-medium mb-1">🔧 Development Mode</p>
-                                    <p className="text-lg font-mono font-bold text-amber-900 tracking-wider">
-                                        OTP: {devOtp}
-                                    </p>
                                 </div>
                             )}
 

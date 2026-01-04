@@ -113,6 +113,13 @@ router.post('/otp/verify', AuthController.verifyOtp);
 router.post('/otp/set-password', AuthController.setPasswordWithOtp);
 
 /**
+ * @route   POST /api/auth/check-email
+ * @desc    Check if email exists
+ * @access  Public
+ */
+router.post('/check-email', AuthController.checkEmail);
+
+/**
  * @route   POST /api/auth/password/change
  * @desc    Change password (authenticated user)
  * @access  Private

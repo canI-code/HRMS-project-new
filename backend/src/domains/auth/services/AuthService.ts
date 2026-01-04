@@ -824,4 +824,33 @@ export class AuthService {
 
     logger.info('New employee account created via OTP', { email, userId: newUser._id.toString() });
   }
+
+  /**
+   * Check if email exists in system
+   */
+  static async checkEmailExists(data: { email: string }): Promise<void> {
+    const { email } = data;
+
+    const user = await User.findOne({
+      email,
+      isDeleted: false,
+    });
+
+    if (user) {
+      return;
+    }
+
+    // Check if email exists in employee records for new employee onboarding
+    const { EmployeeModel } = await import('@/domains/employees/models/Employee');
+    const employee = await EmployeeModel.findOne({
+      'personal.contact.email': email,
+      isDeleted: { $ne: true },
+    });
+
+    if (employee) {
+      return;
+    }
+
+    throw new AppError('Email does not exist in the system', 404, 'EMAIL_NOT_FOUND');
+  }
 }

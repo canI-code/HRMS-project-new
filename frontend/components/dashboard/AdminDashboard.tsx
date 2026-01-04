@@ -8,6 +8,7 @@ import { employeeApi } from "@/lib/employees/api";
 import { leaveApi } from "@/lib/leave/api";
 import { attendanceApi } from "@/lib/attendance/api";
 import { DepartmentReport } from "@/lib/payroll/types";
+import { Clock, Briefcase } from "lucide-react";
 
 export default function AdminDashboard() {
     const { state } = useAuth();
@@ -26,9 +27,11 @@ export default function AdminDashboard() {
         attendanceStatus: "Not Checked In",
         lastSalary: 0,
         checkInTime: "--:--",
-        checkOutTime: "--:--"
+        checkOutTime: "--:--",
+        totalHours: "--"
     });
 
+    const [weeklyData, setWeeklyData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
     const [departmentStats, setDepartmentStats] = useState<DepartmentReport[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -116,6 +119,7 @@ export default function AdminDashboard() {
                 let personalCheckIn = "--:--";
                 let personalCheckOut = "--:--";
                 let personalLastSalary = 0;
+                let personalTotalHours = "--";
 
                 if (myLeaves.status === "fulfilled") {
                     personalLeaveBalance = myLeaves.value.reduce((acc, curr) => acc + curr.available, 0);
@@ -128,6 +132,8 @@ export default function AdminDashboard() {
                         personalCheckIn = new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         if (record.checkOut) {
                             personalCheckOut = new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const hours = ((new Date(record.checkOut).getTime() - new Date(record.checkIn).getTime()) / (1000 * 60 * 60)).toFixed(1);
+                            personalTotalHours = hours;
                         }
                     }
                 }
@@ -141,8 +147,36 @@ export default function AdminDashboard() {
                     attendanceStatus: personalStatus,
                     checkInTime: personalCheckIn,
                     checkOutTime: personalCheckOut,
-                    lastSalary: personalLastSalary
+                    lastSalary: personalLastSalary,
+                    totalHours: personalTotalHours
                 });
+
+                // Fetch weekly attendance for the chart
+                if (employeeId) {
+                    const monday = new Date();
+                    const dayOfWeek = monday.getDay();
+                    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                    monday.setDate(monday.getDate() + diff);
+                    monday.setHours(0, 0, 0, 0);
+
+                    const hours: number[] = [];
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date(monday);
+                        date.setDate(date.getDate() + i);
+                        const dateStr = date.toISOString().split('T')[0];
+                        try {
+                            const record = await attendanceApi.getByDate(employeeId, dateStr, tokens);
+                            if (record && record.workingMinutes) {
+                                hours.push(record.workingMinutes / 60);
+                            } else {
+                                hours.push(0);
+                            }
+                        } catch (e) {
+                            hours.push(0);
+                        }
+                    }
+                    setWeeklyData(hours);
+                }
 
             } catch (e) {
                 console.error("Dashboard fetch error", e);
@@ -171,41 +205,78 @@ export default function AdminDashboard() {
             {/* My Personal Overview Section */}
             <div>
                 <h2 className="text-lg font-semibold mb-4 text-zinc-800">My Personal Overview</h2>
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2">
+                    {/* Today's Attendance */}
                     <Card className="bg-gradient-to-br from-white to-blue-50/50 border-blue-100">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-blue-700">My Leave Balance</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-zinc-800">{myStats.leaveBalance} <span className="text-sm font-normal text-muted-foreground">Days</span></div>
-                            <p className="text-xs text-blue-600/80 mt-1">Available Annual Leave</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-white to-purple-50/50 border-purple-100">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-purple-700">My Attendance</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-blue-700">Today's Attendance</CardTitle>
+                            <Clock className="h-4 w-4 text-blue-600" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-zinc-800">{myStats.attendanceStatus}</div>
-                            <div className="flex justify-between text-xs text-purple-600/80 mt-1">
-                                <p>Check-in: {myStats.checkInTime}</p>
-                                <p>Check-out: {myStats.checkOutTime}</p>
+                            <div className="flex justify-between text-xs text-blue-600/80 mt-2">
+                                <span>In: {myStats.checkInTime}</span>
+                                <span>Out: {myStats.checkOutTime}</span>
                             </div>
+                            {myStats.totalHours !== "--" && (
+                                <p className="text-xs text-green-600 mt-1">{myStats.totalHours} Hrs Working</p>
+                            )}
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-white to-green-50/50 border-green-100">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-green-700">Last Salary</CardTitle>
+                    {/* My Leave Balance */}
+                    <Card className="bg-gradient-to-br from-white to-purple-50/50 border-purple-100">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-purple-700">My Leave Balance</CardTitle>
+                            <Briefcase className="h-4 w-4 text-purple-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-zinc-800">{formatCurrency(myStats.lastSalary)}</div>
-                            <p className="text-xs text-green-600/80 mt-1">Net Pay (Last Month)</p>
+                            <div className="text-2xl font-bold text-zinc-800">{myStats.leaveBalance} <span className="text-sm font-normal text-muted-foreground">Days</span></div>
+                            <p className="text-xs text-purple-600/80 mt-1">Available Annual Leave</p>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+
+            {/* Weekly Attendance Chart */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Weekly Attendance</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Your working hours for this week</p>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-56 flex items-end justify-between gap-3 px-4">
+                        {weeklyData.map((h, i) => {
+                            const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                            const maxHeight = Math.max(...weeklyData, 8); // At least 8 hours for scale
+                            const heightPercent = maxHeight > 0 ? (h / maxHeight) * 100 : 0;
+                            
+                            return (
+                                <div key={i} className="flex flex-col items-center gap-3 flex-1">
+                                    <div className="w-full bg-gray-100 rounded-t-lg relative group h-48 flex items-end">
+                                        <div 
+                                            className={`w-full rounded-t-lg transition-all ${
+                                                h > 0 ? 'bg-primary hover:bg-primary/80' : 'bg-gray-200'
+                                            }`} 
+                                            style={{ height: `${heightPercent}%` }}
+                                        >
+                                            {h > 0 && (
+                                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium">
+                                                    {h.toFixed(1)}h
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xs font-medium text-foreground">{dayLabels[i]}</p>
+                                        <p className="text-xs text-muted-foreground">{h > 0 ? `${h.toFixed(1)}h` : '-'}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Organization Overview Section */}
             <div>
