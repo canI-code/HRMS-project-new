@@ -25,7 +25,8 @@ export default function AdminDashboard() {
         leaveBalance: 0,
         attendanceStatus: "Not Checked In",
         lastSalary: 0,
-        checkInTime: "--:--"
+        checkInTime: "--:--",
+        checkOutTime: "--:--"
     });
 
     const [departmentStats, setDepartmentStats] = useState<DepartmentReport[]>([]);
@@ -46,10 +47,19 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const load = async () => {
-            if (!tokens || !user?.id) return;
+            if (!tokens) return;
             setLoading(true);
             try {
                 const todayStr = new Date().toISOString().split('T')[0];
+
+                // Resolve employeeId (admins may still have employee profile)
+                let employeeId: string | null = null;
+                try {
+                    const me = await employeeApi.me(tokens);
+                    employeeId = me._id;
+                } catch (e) {
+                    console.warn("Could not resolve employee profile for attendance", e);
+                }
 
                 // Parallel fetching of dashboard data
                 const [
@@ -67,7 +77,7 @@ export default function AdminDashboard() {
                     employeeApi.list({ page: 1, limit: 1 }, tokens),
                     leaveApi.listLeaves({ status: "pending", showAll: true }, tokens),
                     leaveApi.getBalances(tokens),
-                    attendanceApi.getByDate(user.id, todayStr, tokens),
+                    employeeId ? attendanceApi.getByDate(employeeId, todayStr, tokens) : Promise.reject("NO_EMPLOYEE_ID"),
                     payrollApi.listMyPayslips(tokens)
                 ]);
 
@@ -104,6 +114,7 @@ export default function AdminDashboard() {
                 let personalLeaveBalance = 0;
                 let personalStatus = "Not Checked In";
                 let personalCheckIn = "--:--";
+                let personalCheckOut = "--:--";
                 let personalLastSalary = 0;
 
                 if (myLeaves.status === "fulfilled") {
@@ -115,6 +126,9 @@ export default function AdminDashboard() {
                     if (record.checkIn) {
                         personalStatus = record.checkOut ? "Checked Out" : "Checked In";
                         personalCheckIn = new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        if (record.checkOut) {
+                            personalCheckOut = new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
                     }
                 }
 
@@ -126,6 +140,7 @@ export default function AdminDashboard() {
                     leaveBalance: personalLeaveBalance,
                     attendanceStatus: personalStatus,
                     checkInTime: personalCheckIn,
+                    checkOutTime: personalCheckOut,
                     lastSalary: personalLastSalary
                 });
 
@@ -173,7 +188,10 @@ export default function AdminDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-zinc-800">{myStats.attendanceStatus}</div>
-                            <p className="text-xs text-purple-600/80 mt-1">Check-in: {myStats.checkInTime}</p>
+                            <div className="flex justify-between text-xs text-purple-600/80 mt-1">
+                                <p>Check-in: {myStats.checkInTime}</p>
+                                <p>Check-out: {myStats.checkOutTime}</p>
+                            </div>
                         </CardContent>
                     </Card>
 

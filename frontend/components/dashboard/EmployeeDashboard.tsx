@@ -9,6 +9,7 @@ import { Loader2, Clock, CalendarCheck, Briefcase } from "lucide-react";
 import { AttendanceRecord } from "@/lib/attendance/types";
 
 import { leaveApi } from "@/lib/leave/api";
+import { employeeApi } from "@/lib/employees/api";
 
 export default function EmployeeDashboard() {
     const { state } = useAuth();
@@ -16,16 +17,31 @@ export default function EmployeeDashboard() {
     const user = state.user;
 
     const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
+    const [employeeId, setEmployeeId] = useState<string | null>(null);
     const [leaveBalance, setLeaveBalance] = useState<number>(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const fetchEmployeeId = async () => {
+            if (!tokens) return null;
+            try {
+                const me = await employeeApi.me(tokens);
+                setEmployeeId(me._id);
+                return me._id;
+            } catch (e) {
+                console.error("Failed to fetch employee profile", e);
+                return null;
+            }
+        };
+
         const fetchToday = async () => {
-            if (!tokens || !user?.id) return;
+            if (!tokens) return;
             setLoading(true);
             try {
+                const id = employeeId || await fetchEmployeeId();
+                if (!id) return;
                 const dateStr = new Date().toISOString().split('T')[0];
-                const record = await attendanceApi.getByDate(user.id, dateStr, tokens);
+                const record = await attendanceApi.getByDate(id, dateStr, tokens);
                 setTodayRecord(record);
             } catch (e) {
                 console.log("No attendance record for today or error", e);
@@ -49,7 +65,7 @@ export default function EmployeeDashboard() {
 
         fetchToday();
         fetchBalance();
-    }, [tokens, user?.id]);
+    }, [tokens, employeeId]);
 
     const checkInTime = todayRecord?.checkIn
         ? new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

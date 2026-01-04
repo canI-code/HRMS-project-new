@@ -10,6 +10,7 @@ import type { AttendanceRecord } from "@/lib/attendance/types";
 export default function CheckInPage() {
   const { state, refreshTokens } = useAuth();
   const tokens = state.tokens!;
+  const isPrivileged = state.roles.includes("super_admin") || state.roles.includes("hr_admin");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeId, setEmployeeId] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -19,12 +20,14 @@ export default function CheckInPage() {
   useEffect(() => {
     async function loadEmployees() {
       try {
-        if (state.roles.includes("employee")) {
+        // Only super_admin/hr_admin can act on others. Everyone else is limited to their own profile.
+        if (!isPrivileged) {
           const me = await employeeApi.me(tokens);
           setEmployees([me]);
           setEmployeeId(me._id);
           return;
         }
+
         const res = await employeeApi.list({ limit: 100 }, tokens);
         setEmployees(res.employees);
         const mine = res.employees.find((e) => e.userId === state.user?.id);
@@ -81,7 +84,7 @@ export default function CheckInPage() {
             className="mt-1 w-full border rounded p-2"
             value={employeeId}
             onChange={(e) => setEmployeeId(e.target.value)}
-            disabled={state.roles.includes("employee")}
+            disabled={!isPrivileged}
           >
             <option value="">Select employee</option>
             {employees.map((e) => (

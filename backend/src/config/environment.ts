@@ -99,7 +99,8 @@ export const config: Config = {
   bcryptRounds: parseInt(process.env['BCRYPT_ROUNDS'] || '12', 10),
   mfaIssuer: process.env['MFA_ISSUER'] || 'Enterprise HRMS',
   rateLimitWindowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutes
-  rateLimitMaxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '50000', 10), // Very high for dev
+  // Default extremely high to avoid noisy throttling unless explicitly configured via env
+  rateLimitMaxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100000', 10),
 
   // File Upload Configuration
   maxFileSize: parseInt(process.env['MAX_FILE_SIZE'] || '10485760', 10), // 10MB

@@ -39,10 +39,6 @@ All routes under `/(main)` require authentication and use the AppLayout with Sid
 - `/payroll/payslips` - View and download payslips (All)
 - `/payroll/reports` - Payroll reports and analytics (HR Admin)
 
-### Performance
-- `/performance` - Performance management home
-- Includes goal tracking, reviews, and feedback (via components)
-
 ### Documents
 - `/documents` - Document management and upload
 - View, categorize, and version documents
@@ -60,13 +56,13 @@ All routes under `/(main)` require authentication and use the AppLayout with Sid
 Access to all routes
 
 ### HR Admin
-Access to: Employees, Attendance, Leave (approvals), Payroll, Performance, Documents, Notifications, Admin
+Access to: Employees, Attendance, Leave (approvals), Payroll, Documents, Notifications, Admin
 
 ### Manager
-Access to: Dashboard, Attendance, Leave (team view), Performance, Documents, Notifications
+Access to: Dashboard, Attendance, Leave (team view), Documents, Notifications
 
 ### Employee
-Access to: Dashboard, Attendance, Leave (own requests), Performance, Documents, Notifications, Payroll (payslips)
+Access to: Dashboard, Attendance, Leave (own requests), Documents, Notifications, Payroll (payslips)
 
 ## Current Navigation Components
 
@@ -77,7 +73,6 @@ Main navigation menu with:
 - Attendance
 - Leave
 - Payroll
-- Performance
 - Documents
 - Notifications
 - Admin

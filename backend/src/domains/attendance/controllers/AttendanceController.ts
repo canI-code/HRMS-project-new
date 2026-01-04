@@ -23,14 +23,17 @@ export class AttendanceController {
         throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
       }
 
-      // Employees can only check-in for themselves
-      if (context.userRole === 'employee') {
+      const canManageOthers = ['super_admin', 'hr_admin'].includes(context.userRole);
+
+      // Only super_admin/hr_admin may act on others; everyone else must act on their own profile
+      if (!canManageOthers) {
         const emp = await EmployeeModel.findOne({
           _id: new Types.ObjectId(employeeId),
           organizationId: new Types.ObjectId(organizationId),
           userId: new Types.ObjectId(userId),
           isDeleted: { $ne: true },
         });
+
         if (!emp) {
           throw new AppError('Insufficient permissions: can only check in for your own profile', 403, 'INSUFFICIENT_PERMISSIONS');
         }
@@ -71,8 +74,10 @@ export class AttendanceController {
         throw new AppError('Employee ID is required', 400, 'VALIDATION_ERROR');
       }
 
-      // Employees can only check-out for themselves
-      if (context.userRole === 'employee') {
+      const canManageOthers = ['super_admin', 'hr_admin'].includes(context.userRole);
+
+      // Only super_admin/hr_admin may act on others; everyone else must act on their own profile
+      if (!canManageOthers) {
         const emp = await EmployeeModel.findOne({
           _id: new Types.ObjectId(employeeId),
           organizationId: new Types.ObjectId(organizationId),

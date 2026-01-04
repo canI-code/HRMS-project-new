@@ -17,7 +17,6 @@ const navItems: NavItem[] = [
   { label: "Attendance", href: "/attendance", roles: ["super_admin", "hr_admin", "manager", "employee"] },
   { label: "Leave", href: "/leave", roles: ["super_admin", "hr_admin", "manager", "employee"] },
   { label: "Payroll", href: "/payroll", roles: ["super_admin", "hr_admin", "manager"] },
-  { label: "Performance", href: "/performance", roles: ["super_admin", "hr_admin", "manager"] },
   { label: "Documents", href: "/documents", roles: ["super_admin", "hr_admin", "manager", "employee"] },
   { label: "Notifications", href: "/notifications", roles: ["super_admin", "hr_admin", "manager", "employee"] },
   { label: "Admin", href: "/admin", roles: ["super_admin", "hr_admin"] },

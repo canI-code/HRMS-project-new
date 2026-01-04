@@ -27,7 +27,6 @@ const navigation = [
     { name: "Attendance", href: "/attendance", icon: Calendar },
     { name: "Leave", href: "/leave", icon: Briefcase },
     { name: "Payroll", href: "/payroll", icon: FileText },
-    { name: "Performance", href: "/performance", icon: Settings },
     { name: "Documents", href: "/documents", icon: FileText },
     { name: "Notifications", href: "/notifications", icon: Bell },
     { name: "Admin", href: "/admin", icon: Settings },

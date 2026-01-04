@@ -200,9 +200,10 @@ const startServer = async (): Promise<void> => {
     // Initialize background job processors (optional)
     initJobs();
 
-    // Seed default notification templates for all organizations
+    // Seed default notification templates and remove deprecated ones
     try {
-      const { seedAllOrganizationTemplates } = await import('@/domains/notifications/services/seedTemplates');
+      const { seedAllOrganizationTemplates, removeDeprecatedTemplatesAllOrganizations } = await import('@/domains/notifications/services/seedTemplates');
+      await removeDeprecatedTemplatesAllOrganizations();
       await seedAllOrganizationTemplates();
     } catch (seedError) {
       logger.warn('Failed to seed notification templates:', seedError);

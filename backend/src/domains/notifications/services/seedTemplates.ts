@@ -66,26 +66,6 @@ const DEFAULT_TEMPLATES = [
         active: true,
     },
 
-    // Performance
-    {
-        name: 'PERFORMANCE_REVIEW_DUE',
-        channel: NotificationChannel.IN_APP,
-        category: 'performance',
-        subject: 'Performance Review Due',
-        body: 'Your performance review for {{reviewPeriod}} is due on {{dueDate}}. Please complete your self-assessment.',
-        placeholders: ['reviewPeriod', 'dueDate'],
-        active: true,
-    },
-    {
-        name: 'GOAL_DEADLINE_REMINDER',
-        channel: NotificationChannel.IN_APP,
-        category: 'performance',
-        subject: 'Goal Deadline Approaching',
-        body: 'Your goal "{{goalTitle}}" is due on {{dueDate}}. Current progress: {{progress}}%.',
-        placeholders: ['goalTitle', 'dueDate', 'progress'],
-        active: true,
-    },
-
     // General
     {
         name: 'WELCOME_NEW_EMPLOYEE',
@@ -133,6 +113,50 @@ export async function seedNotificationTemplates(organizationId: string): Promise
     }
 
     logger.info(`Notification template seeding complete for organization: ${organizationId}`);
+}
+
+/**
+ * Removes deprecated notification templates.
+ * Useful for cleanup after features are disabled.
+ */
+export async function removeDeprecatedTemplates(organizationId: string): Promise<void> {
+    const deprecatedTemplateNames = [
+        'PERFORMANCE_REVIEW_DUE',
+        'GOAL_DEADLINE_REMINDER',
+    ];
+
+    logger.info(`Removing deprecated templates for organization: ${organizationId}`);
+
+    for (const templateName of deprecatedTemplateNames) {
+        try {
+            await NotificationTemplateModel.deleteOne({
+                organizationId,
+                name: templateName,
+            });
+            logger.debug(`Removed deprecated template: ${templateName}`);
+        } catch (error) {
+            logger.error(`Failed to remove template ${templateName}:`, error);
+        }
+    }
+
+    logger.info(`Deprecated template removal complete for organization: ${organizationId}`);
+}
+
+/**
+ * Removes deprecated templates for ALL organizations in the database.
+ */
+export async function removeDeprecatedTemplatesAllOrganizations(): Promise<void> {
+    const { Organization } = await import('@/domains/auth/models/Organization');
+
+    const organizations = await Organization.find({ isDeleted: { $ne: true } });
+
+    logger.info(`Removing deprecated templates for ${organizations.length} organization(s)...`);
+
+    for (const org of organizations) {
+        await removeDeprecatedTemplates(org._id.toString());
+    }
+
+    logger.info('Deprecated template removal complete for all organizations.');
 }
 
 /**
